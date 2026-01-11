@@ -8,7 +8,7 @@ export default function Home() {
         {/* Decorative Header */}
         <div className="text-center mb-8 space-y-2">
           <h1 className="text-4xl md:text-5xl font-extrabold font-display bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent">
-            TransitWatch
+            TopView Report
           </h1>
           <p className="text-lg text-muted-foreground">
             Official Bus Violation Logging System
