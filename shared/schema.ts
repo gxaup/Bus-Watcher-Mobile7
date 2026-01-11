@@ -26,7 +26,9 @@ export const violationTypes = pgTable("violation_types", {
 });
 
 // Schemas
-export const insertSessionSchema = createInsertSchema(sessions).omit({ id: true, endTime: true });
+export const insertSessionSchema = createInsertSchema(sessions, {
+  startTime: z.coerce.date(),
+}).omit({ id: true, endTime: true });
 export const insertViolationSchema = createInsertSchema(violations).omit({ id: true });
 export const insertViolationTypeSchema = createInsertSchema(violationTypes).omit({ id: true });
 
