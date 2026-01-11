@@ -1,18 +1,45 @@
-import { sql } from "drizzle-orm";
-import { pgTable, text, varchar } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, timestamp, boolean } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
-export const users = pgTable("users", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  username: text("username").notNull().unique(),
-  password: text("password").notNull(),
+export const sessions = pgTable("sessions", {
+  id: serial("id").primaryKey(),
+  busNumber: text("bus_number").notNull(),
+  driverName: text("driver_name").notNull(),
+  stopBoarded: text("stop_boarded").notNull(),
+  route: text("route").notNull(),
+  startTime: timestamp("start_time").notNull().defaultNow(),
+  endTime: timestamp("end_time"),
 });
 
-export const insertUserSchema = createInsertSchema(users).pick({
-  username: true,
-  password: true,
+export const violations = pgTable("violations", {
+  id: serial("id").primaryKey(),
+  sessionId: integer("session_id").notNull(), // Foreign key references sessions(id)
+  type: text("type").notNull(),
+  timestamp: timestamp("timestamp").notNull().defaultNow(),
 });
 
-export type InsertUser = z.infer<typeof insertUserSchema>;
-export type User = typeof users.$inferSelect;
+export const violationTypes = pgTable("violation_types", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull().unique(),
+  isDefault: boolean("is_default").notNull().default(false),
+});
+
+// Schemas
+export const insertSessionSchema = createInsertSchema(sessions).omit({ id: true, endTime: true });
+export const insertViolationSchema = createInsertSchema(violations).omit({ id: true });
+export const insertViolationTypeSchema = createInsertSchema(violationTypes).omit({ id: true });
+
+// Types
+export type Session = typeof sessions.$inferSelect;
+export type InsertSession = z.infer<typeof insertSessionSchema>;
+export type Violation = typeof violations.$inferSelect;
+export type InsertViolation = z.infer<typeof insertViolationSchema>;
+export type ViolationType = typeof violationTypes.$inferSelect;
+export type InsertViolationType = z.infer<typeof insertViolationTypeSchema>;
+
+// API Payloads
+export type CreateSessionRequest = InsertSession;
+export type EndSessionRequest = { endTime: string }; // ISO string
+export type CreateViolationRequest = InsertViolation;
+export type CreateViolationTypeRequest = InsertViolationType;

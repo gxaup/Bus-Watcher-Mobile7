@@ -1,16 +1,144 @@
 import type { Express } from "express";
-import { createServer, type Server } from "http";
+import type { Server } from "http";
 import { storage } from "./storage";
+import { api } from "@shared/routes";
+import { z } from "zod";
+import { format } from "date-fns";
 
 export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
-  // put application routes here
-  // prefix all routes with /api
 
-  // use storage to perform CRUD operations on the storage interface
-  // e.g. storage.insertUser(user) or storage.getUserByUsername(username)
+  // Seed default violation types
+  const defaultTypes = ["Standing customer", "Red light run", "Honking", "Uniform"];
+  for (const name of defaultTypes) {
+    const existing = await storage.getViolationTypeByName(name);
+    if (!existing) {
+      await storage.createViolationType({ name, isDefault: true });
+    }
+  }
+
+  // Sessions
+  app.post(api.sessions.create.path, async (req, res) => {
+    try {
+      const input = api.sessions.create.input.parse(req.body);
+      const session = await storage.createSession(input);
+      res.status(201).json(session);
+    } catch (err) {
+      if (err instanceof z.ZodError) {
+        return res.status(400).json({
+          message: err.errors[0].message,
+          field: err.errors[0].path.join('.'),
+        });
+      }
+      throw err;
+    }
+  });
+
+  app.patch(api.sessions.end.path, async (req, res) => {
+    try {
+      const { endTime } = api.sessions.end.input.parse(req.body);
+      const session = await storage.endSession(Number(req.params.id), new Date(endTime));
+      if (!session) return res.status(404).json({ message: "Session not found" });
+      res.json(session);
+    } catch (err) {
+      if (err instanceof z.ZodError) return res.status(400).json({ message: err.message });
+      throw err;
+    }
+  });
+
+  app.get(api.sessions.get.path, async (req, res) => {
+    const session = await storage.getSession(Number(req.params.id));
+    if (!session) return res.status(404).json({ message: "Session not found" });
+    const violations = await storage.getViolations(session.id);
+    res.json({ ...session, violations });
+  });
+
+  // Violations
+  app.post(api.violations.create.path, async (req, res) => {
+    try {
+      const input = api.violations.create.input.parse(req.body);
+      const violation = await storage.createViolation(input);
+      res.status(201).json(violation);
+    } catch (err) {
+      if (err instanceof z.ZodError) {
+        return res.status(400).json({
+          message: err.errors[0].message,
+          field: err.errors[0].path.join('.'),
+        });
+      }
+      throw err;
+    }
+  });
+
+  app.get(api.violations.list.path, async (req, res) => {
+    const violations = await storage.getViolations(Number(req.params.sessionId));
+    res.json(violations);
+  });
+
+  app.delete(api.violations.delete.path, async (req, res) => {
+    await storage.deleteViolation(Number(req.params.id));
+    res.status(204).end();
+  });
+
+  // Violation Types
+  app.get(api.violationTypes.list.path, async (req, res) => {
+    const types = await storage.getViolationTypes();
+    res.json(types);
+  });
+
+  app.post(api.violationTypes.create.path, async (req, res) => {
+    try {
+      const input = api.violationTypes.create.input.parse(req.body);
+      const type = await storage.createViolationType(input);
+      res.status(201).json(type);
+    } catch (err) {
+      if (err instanceof z.ZodError) {
+        return res.status(400).json({
+          message: err.errors[0].message,
+          field: err.errors[0].path.join('.'),
+        });
+      }
+      throw err;
+    }
+  });
+
+  // Reports
+  app.get(api.reports.generate.path, async (req, res) => {
+    const sessionId = Number(req.params.id);
+    const session = await storage.getSession(sessionId);
+    if (!session) return res.status(404).json({ message: "Session not found" });
+
+    const violations = await storage.getViolations(sessionId);
+
+    // Format Report
+    const lines = [];
+    lines.push(`SESSION REPORT`);
+    lines.push(`================================`);
+    lines.push(`Bus Number: ${session.busNumber}`);
+    lines.push(`Driver: ${session.driverName}`);
+    lines.push(`Route: ${session.route}`);
+    lines.push(`Stop Boarded: ${session.stopBoarded}`);
+    lines.push(`Start Time: ${format(new Date(session.startTime), "PPpp")}`);
+    lines.push(`End Time: ${session.endTime ? format(new Date(session.endTime), "PPpp") : "N/A"}`);
+    lines.push(``);
+    lines.push(`VIOLATIONS LOG (${violations.length})`);
+    lines.push(`--------------------------------`);
+    
+    if (violations.length === 0) {
+      lines.push(`No violations recorded.`);
+    } else {
+      violations.forEach((v, i) => {
+        lines.push(`${i + 1}. [${format(new Date(v.timestamp), "HH:mm:ss")}] ${v.type}`);
+      });
+    }
+
+    const content = lines.join("\n");
+    const filename = `Session_${session.busNumber}_${format(new Date(), "yyyyMMdd_HHmm")}.txt`;
+
+    res.json({ filename, content });
+  });
 
   return httpServer;
 }
