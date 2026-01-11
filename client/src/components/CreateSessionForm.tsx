@@ -21,7 +21,7 @@ import { format, subMinutes, startOfMinute } from "date-fns";
 export function CreateSessionForm() {
   const [, setLocation] = useLocation();
   const createSession = useCreateSession();
-  const [minutesAgo, setMinutesAgo] = useState(0);
+  const [minutesOffset, setMinutesOffset] = useState(0);
 
   const form = useForm<InsertSession>({
     resolver: zodResolver(insertSessionSchema),
@@ -36,9 +36,14 @@ export function CreateSessionForm() {
 
   // Update startTime when slider changes
   useEffect(() => {
-    const newTime = subMinutes(startOfMinute(new Date()), minutesAgo);
+    // minutesOffset: negative means future (right side), positive means past (left side)
+    // Actually, user wants "Future on Right" and "Past on Left".
+    // Slider min -60 (past), max 30 (future). 
+    // If value is -60, it's 60m ago. If value is 30, it's 30m in future.
+    // So subMinutes(now, -value) => subMinutes(now, 60) if value is -60.
+    const newTime = subMinutes(startOfMinute(new Date()), -minutesOffset);
     form.setValue("startTime", newTime);
-  }, [minutesAgo, form]);
+  }, [minutesOffset, form]);
 
   const onSubmit = (data: InsertSession) => {
     createSession.mutate(data, {
@@ -48,7 +53,7 @@ export function CreateSessionForm() {
     });
   };
 
-  const selectedTime = subMinutes(startOfMinute(new Date()), minutesAgo);
+  const selectedTime = subMinutes(startOfMinute(new Date()), -minutesOffset);
 
   return (
     <div className="w-full max-w-md mx-auto p-6 bg-card rounded-2xl shadow-lg border border-border/50">
@@ -131,17 +136,17 @@ export function CreateSessionForm() {
             
             <div className="px-2 pt-2 pb-6">
               <Slider
-                min={0}
-                max={60}
+                min={-60}
+                max={30}
                 step={1}
-                value={[minutesAgo]}
-                onValueChange={(vals) => setMinutesAgo(vals[0])}
+                value={[minutesOffset]}
+                onValueChange={(vals) => setMinutesOffset(vals[0])}
                 className="py-4"
               />
               <div className="flex justify-between mt-2 text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
-                <span>Just Now</span>
-                <span>30m Ago</span>
-                <span>1h Ago</span>
+                <span>-60m (Past)</span>
+                <span>Now</span>
+                <span>+30m (Future)</span>
               </div>
             </div>
           </div>
