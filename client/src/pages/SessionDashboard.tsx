@@ -197,12 +197,12 @@ export default function SessionDashboard() {
                         >
                           <div className="flex items-center gap-4">
                             <div className="flex flex-col items-center justify-center w-12 h-12 rounded-lg bg-secondary/50 text-foreground font-mono text-sm leading-tight">
-                              <span className="font-bold">{format(new Date(violation.timestamp), "HH")}</span>
-                              <span className="text-xs text-muted-foreground">{format(new Date(violation.timestamp), "mm")}</span>
+                              <span className="font-bold">{new Intl.DateTimeFormat('en-US', { hour: '2-digit', hour12: false, timeZone: 'America/New_York' }).format(new Date(violation.timestamp))}</span>
+                              <span className="text-xs text-muted-foreground">{new Intl.DateTimeFormat('en-US', { minute: '2-digit', timeZone: 'America/New_York' }).format(new Date(violation.timestamp))}</span>
                             </div>
                             <div>
                               <p className="font-semibold text-foreground">{violation.type}</p>
-                              <p className="text-xs text-muted-foreground">Logged at {format(new Date(violation.timestamp), "h:mm a")}</p>
+                              <p className="text-xs text-muted-foreground">Logged at {new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'America/New_York' }).format(new Date(violation.timestamp))}</p>
                               {violation.notes && (
                                 <p className="text-sm text-foreground mt-1 bg-secondary/30 p-2 rounded-md italic">
                                   {violation.notes}

@@ -5,10 +5,13 @@ import { api } from "@shared/routes";
 import { z } from "zod";
 import { format } from "date-fns";
 
+import { formatInTimeZone } from "date-fns-tz";
+
 export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
+  const TZ = "America/New_York";
 
   // Seed default violation types
   const defaultTypes = ["Standing customer", "Red light run", "Honking", "Uniform"];
@@ -120,8 +123,8 @@ export async function registerRoutes(
     lines.push(`Driver: ${session.driverName}`);
     lines.push(`Route: ${session.route}`);
     lines.push(`Stop Boarded: ${session.stopBoarded}`);
-    lines.push(`Start Time: ${format(new Date(session.startTime), "PPpp")}`);
-    lines.push(`End Time: ${session.endTime ? format(new Date(session.endTime), "PPpp") : "N/A"}`);
+    lines.push(`Start Time: ${formatInTimeZone(new Date(session.startTime), TZ, "PPpp")}`);
+    lines.push(`End Time: ${session.endTime ? formatInTimeZone(new Date(session.endTime), TZ, "PPpp") : "N/A"}`);
     lines.push(``);
     lines.push(`VIOLATIONS LOG (${violations.length})`);
     lines.push(`--------------------------------`);
@@ -131,7 +134,7 @@ export async function registerRoutes(
     } else {
       violations.forEach((v, i) => {
         const noteText = v.notes ? ` - Notes: ${v.notes}` : "";
-        lines.push(`${i + 1}. [${format(new Date(v.timestamp), "HH:mm:ss")}] ${v.type}${noteText}`);
+        lines.push(`${i + 1}. [${formatInTimeZone(new Date(v.timestamp), TZ, "hh:mm:ss a")}] ${v.type}${noteText}`);
       });
     }
 
