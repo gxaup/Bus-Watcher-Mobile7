@@ -13,11 +13,15 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Loader2, BusFront } from "lucide-react";
+import { Slider } from "@/components/ui/slider";
+import { Loader2, BusFront, Clock } from "lucide-react";
+import { useState, useEffect } from "react";
+import { format, subMinutes, startOfMinute } from "date-fns";
 
 export function CreateSessionForm() {
   const [, setLocation] = useLocation();
   const createSession = useCreateSession();
+  const [minutesAgo, setMinutesAgo] = useState(0);
 
   const form = useForm<InsertSession>({
     resolver: zodResolver(insertSessionSchema),
@@ -26,9 +30,15 @@ export function CreateSessionForm() {
       driverName: "",
       stopBoarded: "",
       route: "",
-      startTime: new Date(), // Initial value, though backend sets defaultNow()
+      startTime: new Date(),
     },
   });
+
+  // Update startTime when slider changes
+  useEffect(() => {
+    const newTime = subMinutes(startOfMinute(new Date()), minutesAgo);
+    form.setValue("startTime", newTime);
+  }, [minutesAgo, form]);
 
   const onSubmit = (data: InsertSession) => {
     createSession.mutate(data, {
@@ -37,6 +47,8 @@ export function CreateSessionForm() {
       },
     });
   };
+
+  const selectedTime = subMinutes(startOfMinute(new Date()), minutesAgo);
 
   return (
     <div className="w-full max-w-md mx-auto p-6 bg-card rounded-2xl shadow-lg border border-border/50">
@@ -49,7 +61,7 @@ export function CreateSessionForm() {
       </div>
 
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <FormField
             control={form.control}
             name="busNumber"
@@ -106,7 +118,35 @@ export function CreateSessionForm() {
             )}
           />
 
-          <div className="pt-4">
+          <div className="space-y-4 pt-2">
+            <div className="flex items-center justify-between">
+              <FormLabel className="text-foreground font-medium flex items-center gap-2">
+                <Clock className="w-4 h-4 text-primary" />
+                Time On (Boarding Time)
+              </FormLabel>
+              <span className="text-sm font-bold bg-primary/10 text-primary px-3 py-1 rounded-full">
+                {format(selectedTime, "h:mm a")}
+              </span>
+            </div>
+            
+            <div className="px-2 pt-2 pb-6">
+              <Slider
+                min={0}
+                max={60}
+                step={1}
+                value={[minutesAgo]}
+                onValueChange={(vals) => setMinutesAgo(vals[0])}
+                className="py-4"
+              />
+              <div className="flex justify-between mt-2 text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
+                <span>Just Now</span>
+                <span>30m Ago</span>
+                <span>1h Ago</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="pt-2">
             <Button
               type="submit"
               className="w-full h-14 text-lg font-semibold shadow-lg shadow-primary/20 hover-lift"
