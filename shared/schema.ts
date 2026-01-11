@@ -17,6 +17,7 @@ export const violations = pgTable("violations", {
   sessionId: integer("session_id").notNull(), // Foreign key references sessions(id)
   type: text("type").notNull(),
   timestamp: timestamp("timestamp").notNull().defaultNow(),
+  notes: text("notes"),
 });
 
 export const violationTypes = pgTable("violation_types", {

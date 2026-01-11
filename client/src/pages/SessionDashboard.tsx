@@ -203,6 +203,11 @@ export default function SessionDashboard() {
                             <div>
                               <p className="font-semibold text-foreground">{violation.type}</p>
                               <p className="text-xs text-muted-foreground">Logged at {format(new Date(violation.timestamp), "h:mm a")}</p>
+                              {violation.notes && (
+                                <p className="text-sm text-foreground mt-1 bg-secondary/30 p-2 rounded-md italic">
+                                  {violation.notes}
+                                </p>
+                              )}
                             </div>
                           </div>
                           

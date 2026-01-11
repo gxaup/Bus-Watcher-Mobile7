@@ -130,7 +130,8 @@ export async function registerRoutes(
       lines.push(`No violations recorded.`);
     } else {
       violations.forEach((v, i) => {
-        lines.push(`${i + 1}. [${format(new Date(v.timestamp), "HH:mm:ss")}] ${v.type}`);
+        const noteText = v.notes ? ` - Notes: ${v.notes}` : "";
+        lines.push(`${i + 1}. [${format(new Date(v.timestamp), "HH:mm:ss")}] ${v.type}${noteText}`);
       });
     }
 

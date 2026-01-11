@@ -24,12 +24,14 @@ interface ViolationButtonProps {
 export function ViolationButton({ sessionId, type, count }: ViolationButtonProps) {
   const [open, setOpen] = useState(false);
   const [time, setTime] = useState("");
+  const [notes, setNotes] = useState("");
   const createViolation = useCreateViolation();
 
   const handleOpen = () => {
     // Set default time to now in HH:mm format for input
     const now = new Date();
     setTime(format(now, "HH:mm"));
+    setNotes("");
     setOpen(true);
   };
 
@@ -46,6 +48,7 @@ export function ViolationButton({ sessionId, type, count }: ViolationButtonProps
         sessionId,
         type,
         timestamp,
+        notes: notes || null,
       },
       {
         onSuccess: () => setOpen(false),
@@ -89,6 +92,18 @@ export function ViolationButton({ sessionId, type, count }: ViolationButtonProps
                 type="time"
                 value={time}
                 onChange={(e) => setTime(e.target.value)}
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-start gap-4">
+              <Label htmlFor="notes" className="text-right pt-2">
+                Notes
+              </Label>
+              <Input
+                id="notes"
+                placeholder="Optional notes..."
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
                 className="col-span-3"
               />
             </div>
