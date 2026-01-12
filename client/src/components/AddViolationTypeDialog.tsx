@@ -40,7 +40,7 @@ export function AddViolationTypeDialog() {
       <DialogTrigger asChild>
         <Button 
           variant="ghost" 
-          className="violation-btn h-20 sm:h-24 md:h-28 flex flex-col items-center justify-center gap-1.5 border-2 border-dashed border-muted-foreground/30 hover:border-primary/50 hover:bg-primary/5 rounded-2xl"
+          className="violation-btn h-20 sm:h-24 md:h-28 flex flex-col items-center justify-center gap-1.5 border-2 border-dashed border-white/20 hover:border-white/40 hover:bg-white/10 rounded-2xl"
           data-testid="button-add-violation-type"
         >
           <Plus className="w-6 h-6 text-muted-foreground" />

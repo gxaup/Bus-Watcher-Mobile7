@@ -58,8 +58,8 @@ export function CreateSessionForm() {
   return (
     <div className="w-full max-w-md mx-auto p-6 bg-card rounded-2xl shadow-lg border border-border/50">
       <div className="mb-8 text-center">
-        <div className="mx-auto w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mb-4">
-          <BusFront className="w-8 h-8 text-primary" />
+        <div className="mx-auto w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center mb-4">
+          <BusFront className="w-8 h-8 text-foreground" />
         </div>
         <h1 className="text-2xl font-bold font-display text-foreground">Start Observation</h1>
         <p className="text-muted-foreground mt-2">Enter trip details to begin logging.</p>
@@ -126,10 +126,10 @@ export function CreateSessionForm() {
           <div className="space-y-4 pt-2">
             <div className="flex items-center justify-between">
               <FormLabel className="text-foreground font-medium flex items-center gap-2">
-                <Clock className="w-4 h-4 text-primary" />
+                <Clock className="w-4 h-4 text-muted-foreground" />
                 Time On (Boarding Time)
               </FormLabel>
-              <span className="text-sm font-bold bg-primary/10 text-primary px-3 py-1 rounded-full">
+              <span className="text-sm font-bold bg-white/10 text-foreground px-3 py-1 rounded-full">
                 {format(selectedTime, "h:mm a")}
               </span>
             </div>

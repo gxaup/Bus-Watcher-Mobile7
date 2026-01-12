@@ -110,7 +110,7 @@ export default function SessionDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-secondary/20 pb-28">
+    <div className="min-h-screen bg-background pb-28">
       {/* Sticky Header with Session Info - Optimized for Mobile */}
       <header className="sticky top-0 z-50 bg-background/95 backdrop-blur-lg border-b border-border shadow-sm safe-area-top">
         <div className="max-w-5xl mx-auto px-4 py-3">
@@ -119,43 +119,43 @@ export default function SessionDashboard() {
               <ArrowLeft className="w-5 h-5" />
               <span className="sr-only md:not-sr-only">Exit</span>
             </Link>
-            <div className="flex items-center gap-2 bg-green-50 dark:bg-green-900/30 px-3 py-1.5 rounded-full">
+            <div className="flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded-full">
               <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-              <span className="text-xs font-semibold text-green-600 dark:text-green-400 uppercase tracking-wider">Live</span>
+              <span className="text-xs font-semibold text-green-400 uppercase tracking-wider">Live</span>
             </div>
           </div>
           
           {/* Mobile-optimized session info - horizontal scroll on small screens */}
           <div className="flex gap-3 overflow-x-auto pb-1 -mx-1 px-1 md:grid md:grid-cols-4 md:gap-4 md:overflow-visible">
-            <div className="flex items-center gap-2 bg-blue-50 dark:bg-blue-900/30 rounded-lg px-3 py-2 shrink-0">
-              <Bus className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+            <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-lg px-3 py-2 shrink-0">
+              <Bus className="w-4 h-4 text-muted-foreground" />
               <div>
-                <p className="text-[10px] text-blue-600/70 dark:text-blue-400/70 font-medium uppercase">Bus</p>
-                <p className="font-bold text-blue-700 dark:text-blue-300 text-sm">{session.busNumber}</p>
+                <p className="text-[10px] text-muted-foreground font-medium uppercase">Bus</p>
+                <p className="font-bold text-foreground text-sm">{session.busNumber}</p>
               </div>
             </div>
             
-            <div className="flex items-center gap-2 bg-purple-50 dark:bg-purple-900/30 rounded-lg px-3 py-2 shrink-0">
-              <User className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+            <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-lg px-3 py-2 shrink-0">
+              <User className="w-4 h-4 text-muted-foreground" />
               <div>
-                <p className="text-[10px] text-purple-600/70 dark:text-purple-400/70 font-medium uppercase">Driver</p>
-                <p className="font-bold text-purple-700 dark:text-purple-300 text-sm truncate max-w-[100px]">{session.driverName}</p>
+                <p className="text-[10px] text-muted-foreground font-medium uppercase">Driver</p>
+                <p className="font-bold text-foreground text-sm truncate max-w-[100px]">{session.driverName}</p>
               </div>
             </div>
 
-            <div className="flex items-center gap-2 bg-orange-50 dark:bg-orange-900/30 rounded-lg px-3 py-2 shrink-0">
-              <MapPin className="w-4 h-4 text-orange-600 dark:text-orange-400" />
+            <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-lg px-3 py-2 shrink-0">
+              <MapPin className="w-4 h-4 text-muted-foreground" />
               <div>
-                <p className="text-[10px] text-orange-600/70 dark:text-orange-400/70 font-medium uppercase">Route</p>
-                <p className="font-bold text-orange-700 dark:text-orange-300 text-sm">{session.route}</p>
+                <p className="text-[10px] text-muted-foreground font-medium uppercase">Route</p>
+                <p className="font-bold text-foreground text-sm">{session.route}</p>
               </div>
             </div>
 
-            <div className="flex items-center gap-2 bg-emerald-50 dark:bg-emerald-900/30 rounded-lg px-3 py-2 shrink-0">
-              <Clock className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+            <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-lg px-3 py-2 shrink-0">
+              <Clock className="w-4 h-4 text-muted-foreground" />
               <div>
-                <p className="text-[10px] text-emerald-600/70 dark:text-emerald-400/70 font-medium uppercase">Started</p>
-                <p className="font-bold text-emerald-700 dark:text-emerald-300 text-sm">{format(new Date(session.startTime), "h:mm a")}</p>
+                <p className="text-[10px] text-muted-foreground font-medium uppercase">Started</p>
+                <p className="font-bold text-foreground text-sm">{format(new Date(session.startTime), "h:mm a")}</p>
               </div>
             </div>
           </div>

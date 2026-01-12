@@ -63,15 +63,15 @@ export function ViolationButton({ sessionId, type, count }: ViolationButtonProps
       <div className="relative">
         <Button
           variant="outline"
-          className="violation-btn w-full h-20 sm:h-24 md:h-28 flex flex-col items-center justify-center gap-1.5 border-2 border-border/50 hover:border-primary/50 hover:bg-primary/5 text-wrap text-center rounded-2xl shadow-sm px-3"
+          className="violation-btn w-full h-20 sm:h-24 md:h-28 flex flex-col items-center justify-center gap-1.5 border-2 border-white/10 hover:border-white/30 hover:bg-white/10 text-wrap text-center rounded-2xl shadow-sm px-3"
           onClick={handleOpen}
           data-testid={`button-violation-${type.replace(/\s+/g, '-').toLowerCase()}`}
         >
-          <AlertCircle className="w-6 h-6 text-primary shrink-0" />
+          <AlertCircle className="w-6 h-6 text-muted-foreground shrink-0" />
           <span className="font-semibold text-sm leading-tight line-clamp-2 break-words">{type}</span>
         </Button>
         {count > 0 && (
-          <Badge className="absolute -top-2 -right-2 w-7 h-7 flex items-center justify-center rounded-full bg-accent text-white shadow-lg border-2 border-background text-xs font-bold">
+          <Badge className="absolute -top-2 -right-2 w-7 h-7 flex items-center justify-center rounded-full bg-white text-black shadow-lg border-2 border-background text-xs font-bold">
             {count}
           </Badge>
         )}

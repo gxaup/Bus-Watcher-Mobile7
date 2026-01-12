@@ -83,7 +83,7 @@ export default function Reports() {
   const completed = sessions?.filter(s => s.endTime) || [];
 
   return (
-    <div className="min-h-screen w-full bg-gradient-to-b from-background to-secondary/30 p-4 safe-area-top safe-area-bottom">
+    <div className="min-h-screen w-full bg-background p-4 safe-area-top safe-area-bottom">
       <div className="max-w-2xl mx-auto">
         <div className="flex items-center gap-3 mb-6">
           <Link href="/">
@@ -106,11 +106,11 @@ export default function Reports() {
         </div>
 
         <div className="space-y-6">
-          <Card className="border-amber-200 bg-amber-50/50 dark:bg-amber-950/20 dark:border-amber-800">
+          <Card className="border-white/10 bg-white/5">
             <CardHeader className="pb-3">
               <CardTitle className="flex items-center gap-3 text-lg">
-                <div className="p-2 bg-amber-100 dark:bg-amber-900 rounded-lg">
-                  <Clock className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+                <div className="p-2 bg-white/10 rounded-lg">
+                  <Clock className="w-5 h-5 text-muted-foreground" />
                 </div>
                 Drafts
                 <span className="ml-auto text-sm font-normal text-muted-foreground">
@@ -157,11 +157,11 @@ export default function Reports() {
             </CardContent>
           </Card>
 
-          <Card className="border-green-200 bg-green-50/50 dark:bg-green-950/20 dark:border-green-800">
+          <Card className="border-white/10 bg-white/5">
             <CardHeader className="pb-3">
               <CardTitle className="flex items-center gap-3 text-lg">
-                <div className="p-2 bg-green-100 dark:bg-green-900 rounded-lg">
-                  <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />
+                <div className="p-2 bg-white/10 rounded-lg">
+                  <CheckCircle className="w-5 h-5 text-muted-foreground" />
                 </div>
                 Completed
                 <span className="ml-auto text-sm font-normal text-muted-foreground">
