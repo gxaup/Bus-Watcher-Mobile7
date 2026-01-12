@@ -179,8 +179,18 @@ export async function registerRoutes(
       );
       
       for (const [type, entries] of sortedGroups) {
-        const timesWithNotes = entries.map(e => e.note ? `${e.time} (${e.note})` : e.time);
-        lines.push(`[${timesWithNotes.join(", ")}] || ${type}`);
+        if (type.toLowerCase() === "uniform") {
+          // For uniform violations, only show notes (no time)
+          const notesOnly = entries.filter(e => e.note).map(e => e.note);
+          if (notesOnly.length > 0) {
+            lines.push(`[${notesOnly.join(", ")}] || ${type}`);
+          } else {
+            lines.push(`${type} (${entries.length})`);
+          }
+        } else {
+          const timesWithNotes = entries.map(e => e.note ? `${e.time} (${e.note})` : e.time);
+          lines.push(`[${timesWithNotes.join(", ")}] || ${type}`);
+        }
       }
     }
 
