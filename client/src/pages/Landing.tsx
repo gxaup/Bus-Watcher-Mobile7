@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { ClipboardList, Folder, Play } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { ClipboardList, Folder, Play, User } from "lucide-react";
 
 export default function Landing() {
   const [, setLocation] = useLocation();
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
+  const [username, setUsername] = useState("");
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -16,7 +18,16 @@ export default function Landing() {
     if (savedId) {
       setActiveSessionId(savedId);
     }
+    const savedUsername = localStorage.getItem("username");
+    if (savedUsername) {
+      setUsername(savedUsername);
+    }
   }, []);
+
+  const handleUsernameChange = (value: string) => {
+    setUsername(value);
+    localStorage.setItem("username", value);
+  };
 
   const handleResume = () => {
     if (activeSessionId) {
@@ -30,16 +41,32 @@ export default function Landing() {
   };
 
   return (
-    <div className="min-h-screen w-full bg-background flex items-center justify-center p-4 safe-area-bottom safe-area-top">
-      <div className="w-full max-w-lg">
-        <div className="text-center mb-10 space-y-2">
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold font-display text-foreground">
-            Full Loop Report
-          </h1>
-          <p className="text-base sm:text-lg text-muted-foreground">
-            Bus Violation Logging
-          </p>
+    <div className="min-h-screen w-full bg-background flex flex-col p-4 safe-area-bottom safe-area-top">
+      {/* Username input in top right */}
+      <div className="flex justify-end mb-4">
+        <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-lg px-3 py-2">
+          <User className="w-4 h-4 text-muted-foreground" />
+          <Input
+            type="text"
+            placeholder="Your name"
+            value={username}
+            onChange={(e) => handleUsernameChange(e.target.value)}
+            className="h-8 w-32 sm:w-40 bg-transparent border-0 p-0 text-sm focus-visible:ring-0"
+            data-testid="input-username"
+          />
         </div>
+      </div>
+      
+      <div className="flex-1 flex items-center justify-center">
+        <div className="w-full max-w-lg">
+          <div className="text-center mb-10 space-y-2">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold font-display text-foreground">
+              Full Loop Report
+            </h1>
+            <p className="text-base sm:text-lg text-muted-foreground">
+              Bus Violation Logging
+            </p>
+          </div>
         
         <div className="flex flex-col gap-3">
           {activeSessionId && (
@@ -74,6 +101,7 @@ export default function Landing() {
               </Button>
             </Link>
           </div>
+        </div>
         </div>
       </div>
     </div>

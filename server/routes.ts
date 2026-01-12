@@ -155,6 +155,7 @@ export async function registerRoutes(
   // Reports
   app.get(api.reports.generate.path, async (req, res) => {
     const sessionId = Number(req.params.id);
+    const username = req.query.username as string | undefined;
     const session = await storage.getSession(sessionId);
     if (!session) return res.status(404).json({ message: "Session not found" });
 
@@ -214,7 +215,8 @@ export async function registerRoutes(
     }
 
     const content = lines.join("\n");
-    const filename = `Session_${session.busNumber}_${format(new Date(), "yyyyMMdd_HHmm")}.txt`;
+    const reportName = username ? `${username}_${session.busNumber}` : `Session_${session.busNumber}`;
+    const filename = `${reportName}_${format(new Date(), "yyyyMMdd_HHmm")}.txt`;
 
     res.json({ filename, content });
   });

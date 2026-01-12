@@ -111,7 +111,11 @@ export function useGenerateReport() {
   
   return useMutation({
     mutationFn: async (sessionId: number) => {
-      const url = buildUrl(api.reports.generate.path, { id: sessionId });
+      const username = localStorage.getItem("username") || "";
+      let url = buildUrl(api.reports.generate.path, { id: sessionId });
+      if (username) {
+        url += `?username=${encodeURIComponent(username)}`;
+      }
       const res = await fetch(url, { credentials: "include" });
       if (!res.ok) throw new Error("Failed to generate report");
       return api.reports.generate.responses[200].parse(await res.json());
