@@ -105,73 +105,67 @@ export default function SessionDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-secondary/20 pb-20">
-      {/* Sticky Header with Session Info */}
-      <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border shadow-sm">
-        <div className="max-w-5xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between mb-4">
-            <Link href="/" className="text-muted-foreground hover:text-foreground flex items-center gap-2 transition-colors">
-              <ArrowLeft className="w-4 h-4" /> Exit
+    <div className="min-h-screen bg-secondary/20 pb-28">
+      {/* Sticky Header with Session Info - Optimized for Mobile */}
+      <header className="sticky top-0 z-50 bg-background/95 backdrop-blur-lg border-b border-border shadow-sm safe-area-top">
+        <div className="max-w-5xl mx-auto px-4 py-3">
+          <div className="flex items-center justify-between mb-3">
+            <Link href="/" className="flex items-center gap-2 h-10 px-2 -ml-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors">
+              <ArrowLeft className="w-5 h-5" />
+              <span className="sr-only md:not-sr-only">Exit</span>
             </Link>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 bg-green-50 dark:bg-green-900/30 px-3 py-1.5 rounded-full">
               <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-              <span className="text-xs font-semibold text-green-600 uppercase tracking-wider">Live Session</span>
+              <span className="text-xs font-semibold text-green-600 dark:text-green-400 uppercase tracking-wider">Live</span>
             </div>
           </div>
           
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
-                <Bus className="w-5 h-5" />
-              </div>
+          {/* Mobile-optimized session info - horizontal scroll on small screens */}
+          <div className="flex gap-3 overflow-x-auto pb-1 -mx-1 px-1 md:grid md:grid-cols-4 md:gap-4 md:overflow-visible">
+            <div className="flex items-center gap-2 bg-blue-50 dark:bg-blue-900/30 rounded-lg px-3 py-2 shrink-0">
+              <Bus className="w-4 h-4 text-blue-600 dark:text-blue-400" />
               <div>
-                <p className="text-xs text-muted-foreground font-medium">Bus Number</p>
-                <p className="font-bold text-foreground">{session.busNumber}</p>
+                <p className="text-[10px] text-blue-600/70 dark:text-blue-400/70 font-medium uppercase">Bus</p>
+                <p className="font-bold text-blue-700 dark:text-blue-300 text-sm">{session.busNumber}</p>
               </div>
             </div>
             
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-purple-50 text-purple-600 rounded-lg">
-                <User className="w-5 h-5" />
-              </div>
+            <div className="flex items-center gap-2 bg-purple-50 dark:bg-purple-900/30 rounded-lg px-3 py-2 shrink-0">
+              <User className="w-4 h-4 text-purple-600 dark:text-purple-400" />
               <div>
-                <p className="text-xs text-muted-foreground font-medium">Driver</p>
-                <p className="font-bold text-foreground truncate max-w-[120px]">{session.driverName}</p>
+                <p className="text-[10px] text-purple-600/70 dark:text-purple-400/70 font-medium uppercase">Driver</p>
+                <p className="font-bold text-purple-700 dark:text-purple-300 text-sm truncate max-w-[100px]">{session.driverName}</p>
               </div>
             </div>
 
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-orange-50 text-orange-600 rounded-lg">
-                <MapPin className="w-5 h-5" />
-              </div>
+            <div className="flex items-center gap-2 bg-orange-50 dark:bg-orange-900/30 rounded-lg px-3 py-2 shrink-0">
+              <MapPin className="w-4 h-4 text-orange-600 dark:text-orange-400" />
               <div>
-                <p className="text-xs text-muted-foreground font-medium">Route</p>
-                <p className="font-bold text-foreground">{session.route}</p>
+                <p className="text-[10px] text-orange-600/70 dark:text-orange-400/70 font-medium uppercase">Route</p>
+                <p className="font-bold text-orange-700 dark:text-orange-300 text-sm">{session.route}</p>
               </div>
             </div>
 
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-emerald-50 text-emerald-600 rounded-lg">
-                <Clock className="w-5 h-5" />
-              </div>
+            <div className="flex items-center gap-2 bg-emerald-50 dark:bg-emerald-900/30 rounded-lg px-3 py-2 shrink-0">
+              <Clock className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
               <div>
-                <p className="text-xs text-muted-foreground font-medium">Started At</p>
-                <p className="font-bold text-foreground">{format(new Date(session.startTime), "h:mm a")}</p>
+                <p className="text-[10px] text-emerald-600/70 dark:text-emerald-400/70 font-medium uppercase">Started</p>
+                <p className="font-bold text-emerald-700 dark:text-emerald-300 text-sm">{format(new Date(session.startTime), "h:mm a")}</p>
               </div>
             </div>
           </div>
         </div>
       </header>
 
-      <main className="max-w-5xl mx-auto px-4 py-8 space-y-8">
+      <main className="max-w-5xl mx-auto px-4 py-6 space-y-6">
         
-        {/* Violation Selection Grid */}
+        {/* Violation Selection Grid - Large touch targets */}
         <section>
-          <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-            <span className="w-1 h-6 bg-primary rounded-full"></span>
-            Log Violation
+          <h2 className="text-lg font-bold mb-3 flex items-center gap-2">
+            <span className="w-1 h-5 bg-primary rounded-full"></span>
+            Tap to Log Violation
           </h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
             {types?.map((type) => (
               <ViolationButton
                 key={type.id}
@@ -184,104 +178,106 @@ export default function SessionDashboard() {
           </div>
         </section>
 
-        {/* Activity Log */}
-        <section className="grid md:grid-cols-3 gap-8">
-          <div className="md:col-span-2">
-            <Card className="border-none shadow-lg">
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-lg font-bold">Session Log</CardTitle>
-                <span className="text-xs font-mono text-muted-foreground px-2 py-1 bg-secondary rounded">
-                  {violations?.length || 0} Events
-                </span>
-              </CardHeader>
-              <CardContent>
-                <ScrollArea className="h-[400px] pr-4">
-                  {isViolationsLoading ? (
-                    <div className="space-y-3">
-                      <Skeleton className="h-16 w-full" />
-                      <Skeleton className="h-16 w-full" />
-                      <Skeleton className="h-16 w-full" />
-                    </div>
-                  ) : violations && violations.length > 0 ? (
-                    <div className="space-y-3">
-                      {violations.map((violation) => (
-                        <div
-                          key={violation.id}
-                          className="group flex items-center justify-between p-4 bg-background border border-border/50 rounded-xl hover:border-primary/30 hover:shadow-sm transition-all"
-                        >
-                          <div className="flex items-center gap-4">
-                            <div className="flex flex-col items-center justify-center w-12 h-12 rounded-lg bg-secondary/50 text-foreground font-mono text-sm leading-tight">
-                              <span className="font-bold">{new Intl.DateTimeFormat('en-US', { hour: '2-digit', hour12: false, timeZone: 'America/New_York' }).format(new Date(violation.timestamp))}</span>
-                              <span className="text-xs text-muted-foreground">{new Intl.DateTimeFormat('en-US', { minute: '2-digit', timeZone: 'America/New_York' }).format(new Date(violation.timestamp))}</span>
-                            </div>
-                            <div>
-                              <p className="font-semibold text-foreground">{violation.type}</p>
-                              <p className="text-xs text-muted-foreground">Logged at {new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'America/New_York' }).format(new Date(violation.timestamp))}</p>
-                              {violation.notes && (
-                                <p className="text-sm text-foreground mt-1 bg-secondary/30 p-2 rounded-md italic">
-                                  {violation.notes}
-                                </p>
-                              )}
-                            </div>
+        {/* Activity Log - Full width on mobile */}
+        <section>
+          <Card className="border-none shadow-lg">
+            <CardHeader className="flex flex-row items-center justify-between gap-2 pb-2 px-4">
+              <CardTitle className="text-base font-bold">Session Log</CardTitle>
+              <span className="text-xs font-mono text-muted-foreground px-2 py-1 bg-secondary rounded">
+                {violations?.length || 0} logged
+              </span>
+            </CardHeader>
+            <CardContent className="px-3 md:px-6">
+              <ScrollArea className="h-[50vh] md:h-[400px]">
+                {isViolationsLoading ? (
+                  <div className="space-y-2">
+                    <Skeleton className="h-14 w-full" />
+                    <Skeleton className="h-14 w-full" />
+                    <Skeleton className="h-14 w-full" />
+                  </div>
+                ) : violations && violations.length > 0 ? (
+                  <div className="space-y-2">
+                    {violations.map((violation) => (
+                      <div
+                        key={violation.id}
+                        className="touch-card flex items-center justify-between p-3 bg-background border border-border/50 rounded-xl"
+                      >
+                        <div className="flex items-center gap-3 min-w-0 flex-1">
+                          <div className="flex flex-col items-center justify-center w-11 h-11 rounded-lg bg-secondary/50 text-foreground font-mono text-sm leading-tight shrink-0">
+                            <span className="font-bold text-xs">{new Intl.DateTimeFormat('en-US', { hour: '2-digit', hour12: false, timeZone: 'America/New_York' }).format(new Date(violation.timestamp))}</span>
+                            <span className="text-[10px] text-muted-foreground">{new Intl.DateTimeFormat('en-US', { minute: '2-digit', timeZone: 'America/New_York' }).format(new Date(violation.timestamp))}</span>
                           </div>
-                          
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity"
-                            onClick={() => deleteViolation.mutate({ id: violation.id, sessionId })}
-                          >
-                            <X className="w-5 h-5" />
-                          </Button>
+                          <div className="min-w-0 flex-1">
+                            <p className="font-semibold text-foreground text-sm truncate">{violation.type}</p>
+                            <p className="text-[11px] text-muted-foreground">{new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'America/New_York' }).format(new Date(violation.timestamp))}</p>
+                            {violation.notes && (
+                              <p className="text-xs text-foreground mt-1 bg-secondary/30 p-1.5 rounded-md italic truncate">
+                                {violation.notes}
+                              </p>
+                            )}
+                          </div>
                         </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="h-full flex flex-col items-center justify-center text-muted-foreground space-y-2 py-12 border-2 border-dashed border-border/50 rounded-xl">
-                      <Trash2 className="w-8 h-8 opacity-20" />
-                      <p>No violations logged yet.</p>
-                    </div>
-                  )}
-                </ScrollArea>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Actions Panel */}
-          <div className="space-y-4">
-            <Card className="bg-primary/5 border-primary/20">
-              <CardHeader>
-                <CardTitle className="text-lg">Actions</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <Button 
-                  className="w-full h-14 text-lg shadow-lg shadow-primary/20 hover-lift"
-                  onClick={openEndDialog}
-                  disabled={!!session.endTime}
-                >
-                  {session.endTime ? "Session Ended" : "End Session & Report"}
-                </Button>
-                
-                {session.endTime && (
-                  <Button 
-                    variant="outline" 
-                    className="w-full"
-                    onClick={() => generateReport.mutate(sessionId)}
-                    disabled={generateReport.isPending}
-                  >
-                    {generateReport.isPending ? (
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    ) : (
-                      <FileText className="mr-2 h-4 w-4" />
-                    )}
-                    Download Report Again
-                  </Button>
+                        
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 shrink-0 h-10 w-10"
+                          onClick={() => deleteViolation.mutate({ id: violation.id, sessionId })}
+                          data-testid={`button-delete-violation-${violation.id}`}
+                        >
+                          <X className="w-5 h-5" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center text-muted-foreground space-y-2 py-10 border-2 border-dashed border-border/50 rounded-xl">
+                    <Trash2 className="w-6 h-6 opacity-20" />
+                    <p className="text-sm">No violations logged yet</p>
+                    <p className="text-xs">Tap a violation type above to start</p>
+                  </div>
                 )}
-              </CardContent>
-            </Card>
-          </div>
+              </ScrollArea>
+            </CardContent>
+          </Card>
         </section>
       </main>
+
+      {/* Fixed Bottom Action Bar for Mobile */}
+      <div className="mobile-bottom-bar px-4">
+        <div className="max-w-5xl mx-auto flex gap-3">
+          {session.endTime ? (
+            <Button 
+              variant="outline" 
+              className="flex-1 h-12 text-base"
+              onClick={() => generateReport.mutate(sessionId)}
+              disabled={generateReport.isPending}
+              data-testid="button-download-report"
+            >
+              {generateReport.isPending ? (
+                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+              ) : (
+                <FileText className="mr-2 h-5 w-5" />
+              )}
+              Download Report
+            </Button>
+          ) : (
+            <Button 
+              className="flex-1 h-12 text-base font-semibold"
+              onClick={openEndDialog}
+              disabled={endSession.isPending || generateReport.isPending}
+              data-testid="button-end-session"
+            >
+              {(endSession.isPending || generateReport.isPending) ? (
+                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+              ) : (
+                <FileText className="mr-2 h-5 w-5" />
+              )}
+              End Session & Report
+            </Button>
+          )}
+        </div>
+      </div>
 
       {/* End Session Dialog */}
       <Dialog open={endDialogOpen} onOpenChange={setEndDialogOpen}>

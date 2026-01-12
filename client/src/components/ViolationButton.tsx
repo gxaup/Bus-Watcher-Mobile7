@@ -58,33 +58,34 @@ export function ViolationButton({ sessionId, type, count }: ViolationButtonProps
 
   return (
     <>
-      <div className="relative group">
+      <div className="relative">
         <Button
           variant="outline"
-          className="w-full h-24 md:h-32 flex flex-col items-center justify-center gap-1 border-2 border-border/50 hover:border-primary/50 hover:bg-primary/5 text-wrap text-center rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 px-2"
+          className="violation-btn w-full h-20 sm:h-24 md:h-28 flex flex-col items-center justify-center gap-1.5 border-2 border-border/50 hover:border-primary/50 hover:bg-primary/5 text-wrap text-center rounded-2xl shadow-sm px-3"
           onClick={handleOpen}
+          data-testid={`button-violation-${type.replace(/\s+/g, '-').toLowerCase()}`}
         >
-          <AlertCircle className="w-5 h-5 md:w-6 md:h-6 text-primary shrink-0" />
-          <span className="font-semibold text-xs md:text-sm leading-tight line-clamp-3 break-words">{type}</span>
+          <AlertCircle className="w-6 h-6 text-primary shrink-0" />
+          <span className="font-semibold text-sm leading-tight line-clamp-2 break-words">{type}</span>
         </Button>
         {count > 0 && (
-          <Badge className="absolute -top-2 -right-2 w-8 h-8 flex items-center justify-center rounded-full bg-accent text-white shadow-lg border-2 border-background animate-in zoom-in">
+          <Badge className="absolute -top-2 -right-2 w-7 h-7 flex items-center justify-center rounded-full bg-accent text-white shadow-lg border-2 border-background text-xs font-bold">
             {count}
           </Badge>
         )}
       </div>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-[425px] max-h-[90vh]">
           <DialogHeader>
-            <DialogTitle>Log Violation</DialogTitle>
+            <DialogTitle className="text-lg">Log Violation</DialogTitle>
             <DialogDescription>
               Confirm the time for <span className="font-semibold text-foreground">{type}</span>.
             </DialogDescription>
           </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="time" className="text-right">
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="time" className="text-sm font-medium">
                 Time
               </Label>
               <Input
@@ -92,27 +93,29 @@ export function ViolationButton({ sessionId, type, count }: ViolationButtonProps
                 type="time"
                 value={time}
                 onChange={(e) => setTime(e.target.value)}
-                className="col-span-3"
+                className="h-12 text-lg"
+                data-testid="input-violation-time"
               />
             </div>
-            <div className="grid grid-cols-4 items-start gap-4">
-              <Label htmlFor="notes" className="text-right pt-2">
-                Notes
+            <div className="space-y-2">
+              <Label htmlFor="notes" className="text-sm font-medium">
+                Notes (optional)
               </Label>
               <Input
                 id="notes"
-                placeholder="Optional notes..."
+                placeholder="Add any notes..."
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                className="col-span-3"
+                className="h-12"
+                data-testid="input-violation-notes"
               />
             </div>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setOpen(false)}>
+          <DialogFooter className="flex-col sm:flex-row gap-2">
+            <Button variant="outline" onClick={() => setOpen(false)} className="h-12 sm:h-10">
               Cancel
             </Button>
-            <Button onClick={handleSubmit} disabled={createViolation.isPending}>
+            <Button onClick={handleSubmit} disabled={createViolation.isPending} className="h-12 sm:h-10" data-testid="button-confirm-violation">
               {createViolation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Confirm
             </Button>

@@ -38,31 +38,37 @@ export function AddViolationTypeDialog() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="ghost" className="h-24 md:h-32 flex flex-col items-center justify-center gap-2 border-2 border-dashed border-muted-foreground/30 hover:border-primary/50 hover:bg-primary/5 rounded-2xl">
-          <Plus className="w-8 h-8 text-muted-foreground" />
-          <span className="text-muted-foreground font-medium">Add Type</span>
+        <Button 
+          variant="ghost" 
+          className="violation-btn h-20 sm:h-24 md:h-28 flex flex-col items-center justify-center gap-1.5 border-2 border-dashed border-muted-foreground/30 hover:border-primary/50 hover:bg-primary/5 rounded-2xl"
+          data-testid="button-add-violation-type"
+        >
+          <Plus className="w-6 h-6 text-muted-foreground" />
+          <span className="text-muted-foreground font-medium text-sm">Add Type</span>
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>New Violation Type</DialogTitle>
+          <DialogTitle className="text-lg">New Violation Type</DialogTitle>
         </DialogHeader>
-        <div className="grid gap-4 py-4">
-          <div className="grid gap-2">
-            <Label htmlFor="name">Violation Name</Label>
+        <div className="space-y-4 py-4">
+          <div className="space-y-2">
+            <Label htmlFor="name" className="text-sm font-medium">Violation Name</Label>
             <Input
               id="name"
               placeholder="e.g. Speeding, Early Arrival"
               value={name}
               onChange={(e) => setName(e.target.value)}
+              className="h-12"
+              data-testid="input-violation-type-name"
             />
           </div>
         </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => setOpen(false)}>
+        <DialogFooter className="flex-col sm:flex-row gap-2">
+          <Button variant="outline" onClick={() => setOpen(false)} className="h-12 sm:h-10">
             Cancel
           </Button>
-          <Button onClick={handleSubmit} disabled={createType.isPending || !name.trim()}>
+          <Button onClick={handleSubmit} disabled={createType.isPending || !name.trim()} className="h-12 sm:h-10" data-testid="button-add-type-confirm">
             {createType.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Add Type
           </Button>
