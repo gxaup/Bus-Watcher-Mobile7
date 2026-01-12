@@ -43,6 +43,11 @@ export default function SessionDashboard() {
   const [endDialogOpen, setEndDialogOpen] = useState(false);
   const [endTime, setEndTime] = useState("");
 
+  // Scroll to top on page load
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   // Save current session ID to localStorage for recovery
   useEffect(() => {
     if (sessionId && session && !session.endTime) {

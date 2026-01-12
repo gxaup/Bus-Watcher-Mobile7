@@ -8,6 +8,10 @@ export default function Landing() {
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
 
   useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
+  useEffect(() => {
     const savedId = localStorage.getItem("activeSessionId");
     if (savedId) {
       setActiveSessionId(savedId);

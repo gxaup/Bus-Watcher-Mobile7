@@ -27,8 +27,18 @@ export function ViolationButton({ sessionId, type, count }: ViolationButtonProps
   const [notes, setNotes] = useState("");
   const createViolation = useCreateViolation();
 
+  const isUniform = type.toLowerCase() === "uniform";
+
   const handleOpen = () => {
-    // Set default time to now in HH:mm format for input
+    if (isUniform) {
+      createViolation.mutate({
+        sessionId,
+        type,
+        timestamp: new Date(),
+        notes: null,
+      });
+      return;
+    }
     const now = new Date();
     setTime(format(now, "HH:mm"));
     setNotes("");
@@ -38,7 +48,6 @@ export function ViolationButton({ sessionId, type, count }: ViolationButtonProps
   const handleSubmit = () => {
     if (!time) return;
 
-    // Construct timestamp from current date + selected time
     const [hours, minutes] = time.split(":").map(Number);
     const timestamp = new Date();
     timestamp.setHours(hours, minutes, 0, 0);
