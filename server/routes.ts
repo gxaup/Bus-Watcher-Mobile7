@@ -139,8 +139,9 @@ export async function registerRoutes(
       lines.push(`No violations recorded.`);
     } else {
       violations.forEach((v, i) => {
-        const noteText = v.notes ? ` - Notes: ${v.notes}` : "";
-        lines.push(`${i + 1}. [${formatInTimeZone(new Date(v.timestamp), TZ, "hh:mm:ss a")}] ${v.type}${noteText}`);
+        const timeStr = formatInTimeZone(new Date(v.timestamp), TZ, "hh:mm a");
+        const noteText = v.notes ? `, ${v.notes}` : "";
+        lines.push(`${i + 1}. [${timeStr}${noteText}] || ${v.type}`);
       });
     }
 
