@@ -107,6 +107,7 @@ export function useUpdateSession() {
 
 export function useGenerateReport() {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   
   return useMutation({
     mutationFn: async (sessionId: number) => {
@@ -126,6 +127,9 @@ export function useGenerateReport() {
       a.click();
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
+      
+      // Invalidate sessions query so Reports page has fresh data
+      queryClient.invalidateQueries({ queryKey: ["/api/sessions"] });
       
       toast({
         title: "Report Generated",
