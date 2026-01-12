@@ -34,7 +34,7 @@ export default function Landing() {
       <div className="w-full max-w-lg">
         <div className="text-center mb-10 space-y-2">
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold font-display text-foreground">
-            TopView Report
+            Full Loop Report
           </h1>
           <p className="text-base sm:text-lg text-muted-foreground">
             Bus Violation Logging

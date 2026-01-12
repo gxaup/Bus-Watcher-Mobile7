@@ -2,7 +2,7 @@
 
 ## Overview
 
-TopView Report is a mobile-first web application for logging bus violations in real-time. The system allows transit inspectors to start monitoring sessions, record various violation types with timestamps and notes, and generate reports. It's designed as a simple, practical field tool for tracking driver infractions on public transit.
+Full Loop Report is a mobile-first web application for logging bus violations in real-time. The system allows transit inspectors to start monitoring sessions, record various violation types with timestamps and notes, and generate reports. It's designed as a simple, practical field tool for tracking driver infractions on public transit.
 
 ## User Preferences
 
