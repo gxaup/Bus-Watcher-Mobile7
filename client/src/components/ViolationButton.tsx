@@ -30,15 +30,6 @@ export function ViolationButton({ sessionId, type, count }: ViolationButtonProps
   const isUniform = type.toLowerCase() === "uniform";
 
   const handleOpen = () => {
-    if (isUniform) {
-      createViolation.mutate({
-        sessionId,
-        type,
-        timestamp: new Date(),
-        notes: null,
-      });
-      return;
-    }
     const now = new Date();
     setTime(format(now, "HH:mm"));
     setNotes("");
@@ -46,11 +37,13 @@ export function ViolationButton({ sessionId, type, count }: ViolationButtonProps
   };
 
   const handleSubmit = () => {
-    if (!time) return;
-
-    const [hours, minutes] = time.split(":").map(Number);
-    const timestamp = new Date();
-    timestamp.setHours(hours, minutes, 0, 0);
+    let timestamp = new Date();
+    
+    if (!isUniform) {
+      if (!time) return;
+      const [hours, minutes] = time.split(":").map(Number);
+      timestamp.setHours(hours, minutes, 0, 0);
+    }
 
     createViolation.mutate(
       {
@@ -89,23 +82,28 @@ export function ViolationButton({ sessionId, type, count }: ViolationButtonProps
           <DialogHeader>
             <DialogTitle className="text-lg">Log Violation</DialogTitle>
             <DialogDescription>
-              Confirm the time for <span className="font-semibold text-foreground">{type}</span>.
+              {isUniform 
+                ? <>Add notes for <span className="font-semibold text-foreground">{type}</span> violation.</>
+                : <>Confirm the time for <span className="font-semibold text-foreground">{type}</span>.</>
+              }
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="time" className="text-sm font-medium">
-                Time
-              </Label>
-              <Input
-                id="time"
-                type="time"
-                value={time}
-                onChange={(e) => setTime(e.target.value)}
-                className="h-12 text-lg"
-                data-testid="input-violation-time"
-              />
-            </div>
+            {!isUniform && (
+              <div className="space-y-2">
+                <Label htmlFor="time" className="text-sm font-medium">
+                  Time
+                </Label>
+                <Input
+                  id="time"
+                  type="time"
+                  value={time}
+                  onChange={(e) => setTime(e.target.value)}
+                  className="h-12 text-lg"
+                  data-testid="input-violation-time"
+                />
+              </div>
+            )}
             <div className="space-y-2">
               <Label htmlFor="notes" className="text-sm font-medium">
                 Notes (optional)
