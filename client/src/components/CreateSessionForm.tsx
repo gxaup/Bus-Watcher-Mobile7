@@ -13,15 +13,14 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Slider } from "@/components/ui/slider";
 import { Loader2, BusFront, Clock } from "lucide-react";
-import { useState, useEffect } from "react";
-import { format, subMinutes, startOfMinute } from "date-fns";
+import { useState } from "react";
+import { format } from "date-fns";
 
 export function CreateSessionForm() {
   const [, setLocation] = useLocation();
   const createSession = useCreateSession();
-  const [minutesOffset, setMinutesOffset] = useState(0);
+  const [timeValue, setTimeValue] = useState(format(new Date(), "HH:mm"));
 
   const form = useForm<InsertSession>({
     resolver: zodResolver(insertSessionSchema),
@@ -34,16 +33,13 @@ export function CreateSessionForm() {
     },
   });
 
-  // Update startTime when slider changes
-  useEffect(() => {
-    // minutesOffset: negative means future (right side), positive means past (left side)
-    // Actually, user wants "Future on Right" and "Past on Left".
-    // Slider min -60 (past), max 30 (future). 
-    // If value is -60, it's 60m ago. If value is 30, it's 30m in future.
-    // So subMinutes(now, -value) => subMinutes(now, 60) if value is -60.
-    const newTime = subMinutes(startOfMinute(new Date()), -minutesOffset);
-    form.setValue("startTime", newTime);
-  }, [minutesOffset, form]);
+  const handleTimeChange = (newTime: string) => {
+    setTimeValue(newTime);
+    const [hours, minutes] = newTime.split(":").map(Number);
+    const timestamp = new Date();
+    timestamp.setHours(hours, minutes, 0, 0);
+    form.setValue("startTime", timestamp);
+  };
 
   const onSubmit = (data: InsertSession) => {
     createSession.mutate(data, {
@@ -52,8 +48,6 @@ export function CreateSessionForm() {
       },
     });
   };
-
-  const selectedTime = subMinutes(startOfMinute(new Date()), -minutesOffset);
 
   return (
     <div className="w-full max-w-md mx-auto p-6 bg-card rounded-2xl shadow-lg border border-border/50">
@@ -88,7 +82,7 @@ export function CreateSessionForm() {
               <FormItem>
                 <FormLabel className="text-foreground font-medium">Route</FormLabel>
                 <FormControl>
-                  <Input placeholder="downtown, uptown" className="h-12 bg-background" {...field} />
+                  <Input placeholder="e.g. downtown, uptown, night..." className="h-12 bg-background" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -116,39 +110,25 @@ export function CreateSessionForm() {
               <FormItem>
                 <FormLabel className="text-foreground font-medium">Stop Boarded</FormLabel>
                 <FormControl>
-                  <Input placeholder="1,2,3…" className="h-12 bg-background" {...field} />
+                  <Input placeholder="1, 2, 3..." className="h-12 bg-background" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
 
-          <div className="space-y-4 pt-2">
-            <div className="flex items-center justify-between">
-              <FormLabel className="text-foreground font-medium flex items-center gap-2">
-                <Clock className="w-4 h-4 text-muted-foreground" />
-                Time On (Boarding Time)
-              </FormLabel>
-              <span className="text-sm font-bold bg-white/10 text-foreground px-3 py-1 rounded-full">
-                {format(selectedTime, "h:mm a")}
-              </span>
-            </div>
-            
-            <div className="px-2 pt-2 pb-6">
-              <Slider
-                min={-60}
-                max={30}
-                step={1}
-                value={[minutesOffset]}
-                onValueChange={(vals) => setMinutesOffset(vals[0])}
-                className="py-4"
-              />
-              <div className="flex justify-between mt-2 text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
-                <span>-60m (Past)</span>
-                <span>Now</span>
-                <span>+30m (Future)</span>
-              </div>
-            </div>
+          <div className="space-y-2 pt-2">
+            <FormLabel className="text-foreground font-medium flex items-center gap-2">
+              <Clock className="w-4 h-4 text-muted-foreground" />
+              Time On (Boarding Time)
+            </FormLabel>
+            <Input
+              type="time"
+              value={timeValue}
+              onChange={(e) => handleTimeChange(e.target.value)}
+              className="h-12 text-lg bg-background"
+              data-testid="input-start-time"
+            />
           </div>
 
           <div className="pt-2">
