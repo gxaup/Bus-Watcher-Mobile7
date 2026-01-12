@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useRoute } from "wouter";
+import { useRoute, useLocation } from "wouter";
 import { format } from "date-fns";
 import {
   useSession,
@@ -46,6 +46,7 @@ export default function SessionDashboard() {
   const endSession = useEndSession();
   const generateReport = useGenerateReport();
   const updateSession = useUpdateSession();
+  const [, navigate] = useLocation();
 
   // Dialog states for ending session
   const [endDialogOpen, setEndDialogOpen] = useState(false);
@@ -118,7 +119,9 @@ export default function SessionDashboard() {
           // Clear active session from localStorage since it's now completed
           localStorage.removeItem("activeSessionId");
           // Generate report immediately after ending
-          generateReport.mutate(sessionId);
+          generateReport.mutate(sessionId, {
+            onSuccess: () => navigate("/reports")
+          });
         }
       }
     );
@@ -374,7 +377,9 @@ export default function SessionDashboard() {
             <Button 
               variant="outline" 
               className="flex-1 h-12 text-base"
-              onClick={() => generateReport.mutate(sessionId)}
+              onClick={() => generateReport.mutate(sessionId, {
+                onSuccess: () => navigate("/reports")
+              })}
               disabled={generateReport.isPending}
               data-testid="button-download-report"
             >
