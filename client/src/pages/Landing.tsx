@@ -37,7 +37,7 @@ export default function Landing() {
           </p>
         </div>
         
-        <div className="space-y-6">
+        <div className="flex flex-col gap-4">
           {activeSessionId && (
             <Button 
               onClick={handleResume}
@@ -45,29 +45,31 @@ export default function Landing() {
               data-testid="button-resume-session"
             >
               <Play className="w-6 h-6 mr-3" />
-              Resume Draft
+              Resume Last Report
             </Button>
           )}
           
-          <Button 
-            onClick={handleStartNew}
-            className="w-full h-16 text-lg shadow-lg"
-            data-testid="button-start-report"
-          >
-            <ClipboardList className="w-6 h-6 mr-3" />
-            Start Report
-          </Button>
-          
-          <Link href="/reports">
+          <div className="flex gap-4">
             <Button 
-              variant="outline"
-              className="w-full h-16 text-lg"
-              data-testid="button-reports"
+              onClick={handleStartNew}
+              className="flex-1 h-16 text-lg shadow-lg"
+              data-testid="button-start-report"
             >
-              <Folder className="w-6 h-6 mr-3" />
-              Reports
+              <ClipboardList className="w-6 h-6 mr-3" />
+              Start Report
             </Button>
-          </Link>
+            
+            <Link href="/reports" className="flex-1">
+              <Button 
+                variant="outline"
+                className="w-full h-16 text-lg"
+                data-testid="button-reports"
+              >
+                <Folder className="w-6 h-6 mr-3" />
+                Reports
+              </Button>
+            </Link>
+          </div>
         </div>
       </div>
     </div>
