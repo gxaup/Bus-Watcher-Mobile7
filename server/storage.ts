@@ -10,7 +10,7 @@ import { eq, desc, and, gt, lt } from "drizzle-orm";
 
 export interface IStorage {
   // Users
-  createUser(username: string, passwordHash: string): Promise<User>;
+  createUser(username: string): Promise<User>;
   getUserByUsername(username: string): Promise<User | undefined>;
   getUserById(id: number): Promise<User | undefined>;
   
@@ -45,10 +45,9 @@ export interface IStorage {
 
 export class DatabaseStorage implements IStorage {
   // Users
-  async createUser(username: string, passwordHash: string): Promise<User> {
+  async createUser(username: string): Promise<User> {
     const [newUser] = await db.insert(users).values({
       username,
-      passwordHash,
     }).returning();
     return newUser;
   }

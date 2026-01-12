@@ -9,7 +9,6 @@ import { z } from "zod";
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   username: text("username").notNull().unique(),
-  passwordHash: text("password_hash").notNull(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
@@ -58,11 +57,6 @@ export const violationTypes = pgTable("violation_types", {
 export const insertUserSchema = createInsertSchema(users).omit({ id: true, createdAt: true });
 export const loginSchema = z.object({
   username: z.string().min(1, "Username is required"),
-  password: z.string().min(1, "Password is required"),
-});
-export const signupSchema = z.object({
-  username: z.string().min(1, "Username is required"),
-  password: z.string().min(1, "Password is required"),
 });
 
 // Session schemas
@@ -100,4 +94,3 @@ export type EndSessionRequest = { endTime: string }; // ISO string
 export type CreateViolationRequest = InsertViolation;
 export type CreateViolationTypeRequest = InsertViolationType;
 export type LoginRequest = z.infer<typeof loginSchema>;
-export type SignupRequest = z.infer<typeof signupSchema>;

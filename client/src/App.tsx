@@ -10,13 +10,11 @@ import Home from "@/pages/Home";
 import SessionDashboard from "@/pages/SessionDashboard";
 import Reports from "@/pages/Reports";
 import Login from "@/pages/Login";
-import Signup from "@/pages/Signup";
 
 function Router() {
   return (
     <Switch>
       <Route path="/login" component={Login} />
-      <Route path="/signup" component={Signup} />
       <Route path="/">
         <RequireAuth>
           <Landing />
