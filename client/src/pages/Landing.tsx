@@ -48,7 +48,7 @@ export default function Landing() {
           <User className="w-4 h-4 text-muted-foreground" />
           <Input
             type="text"
-            placeholder="Your name"
+            placeholder=""
             value={username}
             onChange={(e) => handleUsernameChange(e.target.value)}
             className="h-8 w-32 sm:w-40 bg-transparent border-0 p-0 text-sm focus-visible:ring-0"
