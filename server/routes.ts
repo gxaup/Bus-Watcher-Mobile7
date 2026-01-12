@@ -129,8 +129,8 @@ export async function registerRoutes(
     lines.push(`Driver: ${session.driverName}`);
     lines.push(`Route: ${session.route}`);
     lines.push(`Stop Boarded: ${session.stopBoarded}`);
-    lines.push(`Start Time: ${formatInTimeZone(new Date(session.startTime), TZ, "MMM d, yyyy h:mm")}`);
-    lines.push(`End Time: ${session.endTime ? formatInTimeZone(new Date(session.endTime), TZ, "MMM d, yyyy h:mm") : "N/A"}`);
+    lines.push(`Start Time: ${formatInTimeZone(new Date(session.startTime), TZ, "h:mm")}`);
+    lines.push(`End Time: ${session.endTime ? formatInTimeZone(new Date(session.endTime), TZ, "h:mm") : "N/A"}`);
     lines.push(``);
     lines.push(`VIOLATIONS LOG (${violations.length})`);
     lines.push(`--------------------------------`);
