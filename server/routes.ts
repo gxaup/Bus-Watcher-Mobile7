@@ -29,6 +29,11 @@ export async function registerRoutes(
   }
 
   // Sessions
+  app.get(api.sessions.list.path, async (req, res) => {
+    const allSessions = await storage.getSessions();
+    res.json(allSessions);
+  });
+
   app.post(api.sessions.create.path, async (req, res) => {
     try {
       const input = api.sessions.create.input.parse(req.body);

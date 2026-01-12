@@ -58,15 +58,16 @@ export default function Landing() {
             Start Report
           </Button>
           
-          <Button 
-            variant="outline"
-            className="w-full h-16 text-lg"
-            disabled
-            data-testid="button-placeholder"
-          >
-            <Folder className="w-6 h-6 mr-3" />
-            Coming Soon
-          </Button>
+          <Link href="/reports">
+            <Button 
+              variant="outline"
+              className="w-full h-16 text-lg"
+              data-testid="button-reports"
+            >
+              <Folder className="w-6 h-6 mr-3" />
+              Reports
+            </Button>
+          </Link>
         </div>
       </div>
     </div>

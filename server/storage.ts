@@ -12,6 +12,7 @@ export interface IStorage {
   createSession(session: InsertSession): Promise<Session>;
   endSession(id: number, endTime: Date): Promise<Session>;
   getSession(id: number): Promise<Session | undefined>;
+  getSessions(): Promise<Session[]>;
   
   // Violations
   createViolation(violation: InsertViolation): Promise<Violation>;
@@ -43,6 +44,10 @@ export class DatabaseStorage implements IStorage {
   async getSession(id: number): Promise<Session | undefined> {
     const [session] = await db.select().from(sessions).where(eq(sessions.id, id));
     return session;
+  }
+
+  async getSessions(): Promise<Session[]> {
+    return await db.select().from(sessions).orderBy(desc(sessions.startTime));
   }
 
   // Violations

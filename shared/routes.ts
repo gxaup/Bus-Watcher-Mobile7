@@ -23,6 +23,13 @@ export const errorSchemas = {
 
 export const api = {
   sessions: {
+    list: {
+      method: 'GET' as const,
+      path: '/api/sessions',
+      responses: {
+        200: z.array(z.custom<typeof sessions.$inferSelect>()),
+      },
+    },
     create: {
       method: 'POST' as const,
       path: '/api/sessions',
