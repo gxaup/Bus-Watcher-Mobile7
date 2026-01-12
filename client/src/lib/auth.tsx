@@ -45,13 +45,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const response = await apiRequest("POST", "/api/auth/login", { username });
     const data = await response.json();
     setUser(data.user);
-    setLocation("/");
+    setIsLoading(false);
+    window.location.href = "/";
   };
 
   const logout = async () => {
     await apiRequest("POST", "/api/auth/logout", {});
     setUser(null);
-    setLocation("/login");
+    window.location.href = "/login";
   };
 
   return (
@@ -71,13 +72,13 @@ export function useAuth() {
 
 export function RequireAuth({ children }: { children: ReactNode }) {
   const { user, isLoading } = useAuth();
-  const [location, setLocation] = useLocation();
+  const [, setLocation] = useLocation();
 
   useEffect(() => {
-    if (!isLoading && !user && location !== "/login") {
+    if (!isLoading && !user) {
       setLocation("/login");
     }
-  }, [user, isLoading, location, setLocation]);
+  }, [user, isLoading, setLocation]);
 
   if (isLoading) {
     return (
