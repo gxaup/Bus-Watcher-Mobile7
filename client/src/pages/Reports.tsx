@@ -54,7 +54,7 @@ export default function Reports() {
   const handleViewReport = async (sessionId: number) => {
     setLoadingReportId(sessionId);
     try {
-      const res = await fetch(`/api/reports/${sessionId}`);
+      const res = await fetch(`/api/sessions/${sessionId}/report`);
       const data = await res.json();
       setViewingReport({ content: data.content, filename: data.filename });
     } catch (err) {
