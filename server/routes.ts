@@ -36,6 +36,9 @@ export async function registerRoutes(
 
   app.post(api.sessions.create.path, async (req, res) => {
     try {
+      // Reset custom violation types before starting a new session
+      await storage.deleteCustomViolationTypes();
+      
       const input = api.sessions.create.input.parse(req.body);
       const session = await storage.createSession(input);
       res.status(201).json(session);

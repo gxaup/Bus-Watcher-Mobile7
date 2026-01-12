@@ -25,6 +25,7 @@ export interface IStorage {
   createViolationType(type: InsertViolationType): Promise<ViolationType>;
   getViolationTypes(): Promise<ViolationType[]>;
   getViolationTypeByName(name: string): Promise<ViolationType | undefined>;
+  deleteCustomViolationTypes(): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -93,6 +94,10 @@ export class DatabaseStorage implements IStorage {
   async getViolationTypeByName(name: string): Promise<ViolationType | undefined> {
     const [type] = await db.select().from(violationTypes).where(eq(violationTypes.name, name));
     return type;
+  }
+
+  async deleteCustomViolationTypes(): Promise<void> {
+    await db.delete(violationTypes).where(eq(violationTypes.isDefault, false));
   }
 }
 
