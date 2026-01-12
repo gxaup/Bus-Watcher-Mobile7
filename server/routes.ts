@@ -158,17 +158,27 @@ export async function registerRoutes(
     if (violations.length === 0) {
       lines.push(`No violations recorded.`);
     } else {
-      // Group violations by type
-      const grouped: Record<string, Array<{time: string, note?: string}>> = {};
-      violations.forEach((v) => {
+      // Sort violations by timestamp (earliest first)
+      const sortedViolations = [...violations].sort((a, b) => 
+        new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+      );
+      
+      // Group violations by type, preserving time order
+      const grouped: Record<string, Array<{time: string, timestamp: Date, note?: string}>> = {};
+      sortedViolations.forEach((v) => {
         const timeStr = formatInTimeZone(new Date(v.timestamp), TZ, "h:mm");
         if (!grouped[v.type]) {
           grouped[v.type] = [];
         }
-        grouped[v.type].push({ time: timeStr, note: v.notes || undefined });
+        grouped[v.type].push({ time: timeStr, timestamp: new Date(v.timestamp), note: v.notes || undefined });
       });
       
-      for (const [type, entries] of Object.entries(grouped)) {
+      // Sort groups by earliest violation time
+      const sortedGroups = Object.entries(grouped).sort((a, b) => 
+        a[1][0].timestamp.getTime() - b[1][0].timestamp.getTime()
+      );
+      
+      for (const [type, entries] of sortedGroups) {
         const timesWithNotes = entries.map(e => e.note ? `${e.time} (${e.note})` : e.time);
         lines.push(`[${timesWithNotes.join(", ")}] || ${type}`);
       }
