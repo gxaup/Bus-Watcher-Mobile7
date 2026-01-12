@@ -148,11 +148,9 @@ export async function registerRoutes(
         grouped[v.type].push({ time: timeStr, note: v.notes || undefined });
       });
       
-      let idx = 1;
       for (const [type, entries] of Object.entries(grouped)) {
         const timesWithNotes = entries.map(e => e.note ? `${e.time}, ${e.note}` : e.time);
-        lines.push(`${idx}. [${timesWithNotes.join(", ")}] || ${type}`);
-        idx++;
+        lines.push(`[${timesWithNotes.join(", ")}] || ${type}`);
       }
     }
 
