@@ -1,13 +1,19 @@
+import { useState } from "react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { ArrowLeft, FileText, Clock, CheckCircle, Trash2 } from "lucide-react";
+import { ArrowLeft, FileText, Clock, CheckCircle, Trash2, Download, X } from "lucide-react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import type { Session } from "@shared/schema";
 
 export default function Reports() {
+  const [viewingReport, setViewingReport] = useState<{ content: string; filename: string } | null>(null);
+  const [loadingReportId, setLoadingReportId] = useState<number | null>(null);
+
   const { data: sessions, isLoading } = useQuery<Session[]>({
     queryKey: ["/api/sessions"],
   });
@@ -43,6 +49,30 @@ export default function Reports() {
     if (confirm("Delete ALL reports? This cannot be undone.")) {
       deleteAllSessions.mutate();
     }
+  };
+
+  const handleViewReport = async (sessionId: number) => {
+    setLoadingReportId(sessionId);
+    try {
+      const res = await fetch(`/api/reports/${sessionId}`);
+      const data = await res.json();
+      setViewingReport({ content: data.content, filename: data.filename });
+    } catch (err) {
+      console.error("Failed to load report", err);
+    } finally {
+      setLoadingReportId(null);
+    }
+  };
+
+  const handleDownload = () => {
+    if (!viewingReport) return;
+    const blob = new Blob([viewingReport.content], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = viewingReport.filename;
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   const drafts = sessions?.filter(s => !s.endTime) || [];
@@ -147,28 +177,34 @@ export default function Reports() {
               ) : (
                 <div className="space-y-2">
                   {completed.map((session) => (
-                    <Link key={session.id} href={`/session/${session.id}`}>
-                      <div className="flex items-center gap-3 p-3 bg-background rounded-lg border hover:border-primary/50 transition-colors cursor-pointer">
-                        <FileText className="w-4 h-4 text-green-600" />
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium truncate">
-                            Bus {session.busNumber || "Unknown"} - {session.route || "No route"}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            Completed {new Date(session.endTime!).toLocaleDateString()}
-                          </p>
-                        </div>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="text-destructive hover:bg-destructive/10"
-                          onClick={(e) => handleDelete(e, session.id)}
-                          data-testid={`button-delete-session-${session.id}`}
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
+                    <div 
+                      key={session.id} 
+                      className="flex items-center gap-3 p-3 bg-background rounded-lg border hover:border-primary/50 transition-colors cursor-pointer"
+                      onClick={() => handleViewReport(session.id)}
+                      data-testid={`card-completed-session-${session.id}`}
+                    >
+                      <FileText className="w-4 h-4 text-green-600" />
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium truncate">
+                          Bus {session.busNumber || "Unknown"} - {session.route || "No route"}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          Completed {new Date(session.endTime!).toLocaleDateString()}
+                        </p>
                       </div>
-                    </Link>
+                      {loadingReportId === session.id && (
+                        <span className="text-xs text-muted-foreground">Loading...</span>
+                      )}
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="text-destructive hover:bg-destructive/10"
+                        onClick={(e) => handleDelete(e, session.id)}
+                        data-testid={`button-delete-session-${session.id}`}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
                   ))}
                 </div>
               )}
@@ -176,6 +212,30 @@ export default function Reports() {
           </Card>
         </div>
       </div>
+
+      <Dialog open={!!viewingReport} onOpenChange={(open) => !open && setViewingReport(null)}>
+        <DialogContent className="max-w-2xl max-h-[80vh] flex flex-col">
+          <DialogHeader className="flex flex-row items-center justify-between gap-4">
+            <DialogTitle className="font-mono text-sm truncate">
+              {viewingReport?.filename}
+            </DialogTitle>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleDownload}
+              data-testid="button-download-report"
+            >
+              <Download className="w-4 h-4 mr-2" />
+              Download
+            </Button>
+          </DialogHeader>
+          <ScrollArea className="flex-1 mt-4">
+            <pre className="text-sm font-mono whitespace-pre-wrap bg-muted p-4 rounded-lg">
+              {viewingReport?.content}
+            </pre>
+          </ScrollArea>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
