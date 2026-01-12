@@ -117,3 +117,35 @@
 .violation-btn {
   @apply min-h-[5rem] active:scale-95 transition-transform duration-100;
 }
+
+/* Toast countdown bar animation */
+@keyframes toast-countdown {
+  from {
+    width: 100%;
+  }
+  to {
+    width: 0%;
+  }
+}
+
+.toast-countdown-bar {
+  animation: toast-countdown 5s linear forwards;
+  background: linear-gradient(90deg, #22c55e 0%, #4ade80 50%, #22c55e 100%);
+  box-shadow: 0 0 10px #22c55e, 0 0 20px #22c55e, 0 0 30px #22c55e;
+}
+
+/* Toast slide out to left animation override */
+.toast-slide-left[data-state="closed"] {
+  animation: slide-out-left 150ms ease-in forwards;
+}
+
+@keyframes slide-out-left {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(-100%);
+  }
+}
