@@ -1,17 +1,19 @@
-import type { Express } from "express";
+import type { Express, Request, Response, NextFunction } from "express";
 import type { Server } from "http";
 import { storage } from "./storage";
 import { api } from "@shared/routes";
 import { z } from "zod";
 import { format } from "date-fns";
-
 import { formatInTimeZone } from "date-fns-tz";
+import { registerAuthRoutes, isAuthenticated } from "./auth";
 
 export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
   const TZ = "America/New_York";
+  
+  registerAuthRoutes(app);
 
   // Seed default violation types
   const defaultTypes = [
@@ -28,19 +30,18 @@ export async function registerRoutes(
     }
   }
 
-  // Sessions
-  app.get(api.sessions.list.path, async (req, res) => {
-    const allSessions = await storage.getSessions();
+  // Sessions (protected routes)
+  app.get(api.sessions.list.path, isAuthenticated, async (req, res) => {
+    const allSessions = await storage.getUserSessions(req.user!.id);
     res.json(allSessions);
   });
 
-  app.post(api.sessions.create.path, async (req, res) => {
+  app.post(api.sessions.create.path, isAuthenticated, async (req, res) => {
     try {
-      // Reset custom violation types before starting a new session
       await storage.deleteCustomViolationTypes();
       
       const input = api.sessions.create.input.parse(req.body);
-      const session = await storage.createSession(input);
+      const session = await storage.createSession(input, req.user!.id);
       res.status(201).json(session);
     } catch (err) {
       if (err instanceof z.ZodError) {
@@ -53,7 +54,7 @@ export async function registerRoutes(
     }
   });
 
-  app.patch(api.sessions.end.path, async (req, res) => {
+  app.patch(api.sessions.end.path, isAuthenticated, async (req, res) => {
     try {
       const { endTime } = api.sessions.end.input.parse(req.body);
       const session = await storage.endSession(Number(req.params.id), new Date(endTime));
@@ -65,7 +66,7 @@ export async function registerRoutes(
     }
   });
 
-  app.patch(api.sessions.update.path, async (req, res) => {
+  app.patch(api.sessions.update.path, isAuthenticated, async (req, res) => {
     try {
       const input = api.sessions.update.input.parse(req.body);
       const updateData: Record<string, unknown> = {};
@@ -84,21 +85,21 @@ export async function registerRoutes(
     }
   });
 
-  app.get(api.sessions.get.path, async (req, res) => {
+  app.get(api.sessions.get.path, isAuthenticated, async (req, res) => {
     const session = await storage.getSession(Number(req.params.id));
     if (!session) return res.status(404).json({ message: "Session not found" });
     const violations = await storage.getViolations(session.id);
     res.json({ ...session, violations });
   });
 
-  app.delete(api.sessions.delete.path, async (req, res) => {
+  app.delete(api.sessions.delete.path, isAuthenticated, async (req, res) => {
     const session = await storage.getSession(Number(req.params.id));
     if (!session) return res.status(404).json({ message: "Session not found" });
     await storage.deleteSession(Number(req.params.id));
     res.status(204).end();
   });
 
-  app.delete(api.sessions.deleteAll.path, async (req, res) => {
+  app.delete(api.sessions.deleteAll.path, isAuthenticated, async (req, res) => {
     await storage.deleteAllSessions();
     res.status(204).end();
   });

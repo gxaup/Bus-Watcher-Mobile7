@@ -1,19 +1,33 @@
 import { db } from "./db";
 import { 
-  sessions, violations, violationTypes,
+  sessions, violations, violationTypes, users, authSessions,
   type Session, type InsertSession, 
   type Violation, type InsertViolation,
-  type ViolationType, type InsertViolationType
+  type ViolationType, type InsertViolationType,
+  type User, type AuthSession
 } from "@shared/schema";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, and, gt, lt } from "drizzle-orm";
 
 export interface IStorage {
-  // Sessions
-  createSession(session: InsertSession): Promise<Session>;
+  // Users
+  createUser(email: string, passwordHash: string, displayName: string): Promise<User>;
+  getUserByEmail(email: string): Promise<User | undefined>;
+  getUserById(id: number): Promise<User | undefined>;
+  
+  // Auth Sessions
+  createAuthSession(userId: number, token: string, expiresAt: Date): Promise<AuthSession>;
+  getAuthSessionByToken(token: string): Promise<AuthSession | undefined>;
+  deleteAuthSession(token: string): Promise<void>;
+  deleteExpiredSessions(): Promise<void>;
+  deleteUserSessions(userId: number): Promise<void>;
+  
+  // Bus Sessions
+  createSession(session: InsertSession, userId: number): Promise<Session>;
   updateSession(id: number, data: Partial<InsertSession>): Promise<Session | undefined>;
   endSession(id: number, endTime: Date): Promise<Session>;
   getSession(id: number): Promise<Session | undefined>;
   getSessions(): Promise<Session[]>;
+  getUserSessions(userId: number): Promise<Session[]>;
   deleteSession(id: number): Promise<void>;
   deleteAllSessions(): Promise<void>;
   
@@ -30,10 +44,63 @@ export interface IStorage {
 }
 
 export class DatabaseStorage implements IStorage {
-  // Sessions
-  async createSession(session: InsertSession): Promise<Session> {
-    const [newSession] = await db.insert(sessions).values(session).returning();
+  // Users
+  async createUser(email: string, passwordHash: string, displayName: string): Promise<User> {
+    const [newUser] = await db.insert(users).values({
+      email,
+      passwordHash,
+      displayName,
+    }).returning();
+    return newUser;
+  }
+
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.email, email));
+    return user;
+  }
+
+  async getUserById(id: number): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user;
+  }
+
+  // Auth Sessions
+  async createAuthSession(userId: number, token: string, expiresAt: Date): Promise<AuthSession> {
+    const [session] = await db.insert(authSessions).values({
+      userId,
+      token,
+      expiresAt,
+    }).returning();
+    return session;
+  }
+
+  async getAuthSessionByToken(token: string): Promise<AuthSession | undefined> {
+    const [session] = await db.select().from(authSessions).where(
+      and(eq(authSessions.token, token), gt(authSessions.expiresAt, new Date()))
+    );
+    return session;
+  }
+
+  async deleteAuthSession(token: string): Promise<void> {
+    await db.delete(authSessions).where(eq(authSessions.token, token));
+  }
+
+  async deleteExpiredSessions(): Promise<void> {
+    await db.delete(authSessions).where(lt(authSessions.expiresAt, new Date()));
+  }
+
+  async deleteUserSessions(userId: number): Promise<void> {
+    await db.delete(authSessions).where(eq(authSessions.userId, userId));
+  }
+
+  // Bus Sessions
+  async createSession(session: InsertSession, userId: number): Promise<Session> {
+    const [newSession] = await db.insert(sessions).values({ ...session, userId }).returning();
     return newSession;
+  }
+  
+  async getUserSessions(userId: number): Promise<Session[]> {
+    return await db.select().from(sessions).where(eq(sessions.userId, userId)).orderBy(desc(sessions.startTime));
   }
 
   async updateSession(id: number, data: Partial<InsertSession>): Promise<Session | undefined> {
