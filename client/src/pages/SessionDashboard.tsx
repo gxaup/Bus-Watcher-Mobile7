@@ -229,6 +229,12 @@ export default function SessionDashboard() {
             </div>
           </div>
           
+          {/* Session Details Label */}
+          <h2 className="text-lg font-bold mb-3 flex items-center gap-2">
+            <span className="w-1 h-5 bg-primary rounded-full"></span>
+            Session Details
+          </h2>
+          
           {/* Mobile-optimized session info - horizontal scroll on small screens */}
           <div className="flex gap-3 overflow-x-auto pb-1 -mx-1 px-1 md:grid md:grid-cols-4 md:gap-4 md:overflow-visible">
             <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-lg px-3 py-2 shrink-0">
