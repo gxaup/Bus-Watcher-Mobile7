@@ -229,10 +229,10 @@ export default function SessionDashboard() {
             </div>
           </div>
           
-          {/* Session Details Label */}
+          {/* Bus Details Label */}
           <h2 className="text-lg font-bold mb-3 flex items-center gap-2">
             <span className="w-1 h-5 bg-primary rounded-full"></span>
-            Session Details
+            Bus Details
           </h2>
           
           {/* Mobile-optimized session info - horizontal scroll on small screens */}
