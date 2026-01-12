@@ -138,11 +138,22 @@ export async function registerRoutes(
     if (violations.length === 0) {
       lines.push(`No violations recorded.`);
     } else {
-      violations.forEach((v, i) => {
-        const timeStr = formatInTimeZone(new Date(v.timestamp), TZ, "hh:mm a");
-        const noteText = v.notes ? `, ${v.notes}` : "";
-        lines.push(`${i + 1}. [${timeStr}${noteText}] || ${v.type}`);
+      // Group violations by type
+      const grouped: Record<string, Array<{time: string, note?: string}>> = {};
+      violations.forEach((v) => {
+        const timeStr = formatInTimeZone(new Date(v.timestamp), TZ, "h:mm a");
+        if (!grouped[v.type]) {
+          grouped[v.type] = [];
+        }
+        grouped[v.type].push({ time: timeStr, note: v.notes || undefined });
       });
+      
+      let idx = 1;
+      for (const [type, entries] of Object.entries(grouped)) {
+        const timesWithNotes = entries.map(e => e.note ? `${e.time}, ${e.note}` : e.time);
+        lines.push(`${idx}. [${timesWithNotes.join(", ")}] || ${type}`);
+        idx++;
+      }
     }
 
     const content = lines.join("\n");
