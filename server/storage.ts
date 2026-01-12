@@ -10,6 +10,7 @@ import { eq, desc } from "drizzle-orm";
 export interface IStorage {
   // Sessions
   createSession(session: InsertSession): Promise<Session>;
+  updateSession(id: number, data: Partial<InsertSession>): Promise<Session | undefined>;
   endSession(id: number, endTime: Date): Promise<Session>;
   getSession(id: number): Promise<Session | undefined>;
   getSessions(): Promise<Session[]>;
@@ -33,6 +34,15 @@ export class DatabaseStorage implements IStorage {
   async createSession(session: InsertSession): Promise<Session> {
     const [newSession] = await db.insert(sessions).values(session).returning();
     return newSession;
+  }
+
+  async updateSession(id: number, data: Partial<InsertSession>): Promise<Session | undefined> {
+    const [updatedSession] = await db
+      .update(sessions)
+      .set(data)
+      .where(eq(sessions.id, id))
+      .returning();
+    return updatedSession;
   }
 
   async endSession(id: number, endTime: Date): Promise<Session> {

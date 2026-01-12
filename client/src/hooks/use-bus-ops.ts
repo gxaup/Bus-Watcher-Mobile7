@@ -72,6 +72,39 @@ export function useEndSession() {
   });
 }
 
+export function useUpdateSession() {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async ({ id, data }: { id: number, data: { busNumber?: string, driverName?: string, route?: string, stopBoarded?: string, startTime?: string } }) => {
+      const url = buildUrl(api.sessions.update.path, { id });
+      const res = await fetch(url, {
+        method: api.sessions.update.method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+        credentials: "include",
+      });
+      if (!res.ok) throw new Error("Failed to update session");
+      return api.sessions.update.responses[200].parse(await res.json());
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: [api.sessions.get.path, variables.id] });
+      toast({
+        title: "Session Updated",
+        description: "Session details have been updated.",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error updating session",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  });
+}
+
 export function useGenerateReport() {
   const { toast } = useToast();
   

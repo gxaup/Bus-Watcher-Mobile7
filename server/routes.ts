@@ -65,6 +65,25 @@ export async function registerRoutes(
     }
   });
 
+  app.patch(api.sessions.update.path, async (req, res) => {
+    try {
+      const input = api.sessions.update.input.parse(req.body);
+      const updateData: Record<string, unknown> = {};
+      if (input.busNumber !== undefined) updateData.busNumber = input.busNumber;
+      if (input.driverName !== undefined) updateData.driverName = input.driverName;
+      if (input.route !== undefined) updateData.route = input.route;
+      if (input.stopBoarded !== undefined) updateData.stopBoarded = input.stopBoarded;
+      if (input.startTime !== undefined) updateData.startTime = new Date(input.startTime);
+      
+      const session = await storage.updateSession(Number(req.params.id), updateData);
+      if (!session) return res.status(404).json({ message: "Session not found" });
+      res.json(session);
+    } catch (err) {
+      if (err instanceof z.ZodError) return res.status(400).json({ message: err.message });
+      throw err;
+    }
+  });
+
   app.get(api.sessions.get.path, async (req, res) => {
     const session = await storage.getSession(Number(req.params.id));
     if (!session) return res.status(404).json({ message: "Session not found" });

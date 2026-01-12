@@ -7,7 +7,8 @@ import {
   useViolationTypes,
   useDeleteViolation,
   useEndSession,
-  useGenerateReport
+  useGenerateReport,
+  useUpdateSession
 } from "@/hooks/use-bus-ops";
 import { ViolationButton } from "@/components/ViolationButton";
 import { AddViolationTypeDialog } from "@/components/AddViolationTypeDialog";
@@ -25,7 +26,13 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Bus, User, MapPin, Clock, X, FileText, Loader2, ArrowLeft, Trash2 } from "lucide-react";
+import { Bus, User, MapPin, Clock, X, FileText, Loader2, ArrowLeft, Trash2, MoreVertical, Pencil } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Link } from "wouter";
 
 export default function SessionDashboard() {
@@ -38,10 +45,19 @@ export default function SessionDashboard() {
   const deleteViolation = useDeleteViolation();
   const endSession = useEndSession();
   const generateReport = useGenerateReport();
+  const updateSession = useUpdateSession();
 
   // Dialog states for ending session
   const [endDialogOpen, setEndDialogOpen] = useState(false);
   const [endTime, setEndTime] = useState("");
+
+  // Dialog states for editing session
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editBusNumber, setEditBusNumber] = useState("");
+  const [editDriverName, setEditDriverName] = useState("");
+  const [editRoute, setEditRoute] = useState("");
+  const [editStopBoarded, setEditStopBoarded] = useState("");
+  const [editStartTime, setEditStartTime] = useState("");
 
   // Scroll to top on page load
   useEffect(() => {
@@ -109,6 +125,41 @@ export default function SessionDashboard() {
     setEndDialogOpen(true);
   };
 
+  const openEditDialog = () => {
+    if (session) {
+      setEditBusNumber(session.busNumber);
+      setEditDriverName(session.driverName);
+      setEditRoute(session.route);
+      setEditStopBoarded(session.stopBoarded);
+      setEditStartTime(format(new Date(session.startTime), "HH:mm"));
+      setEditDialogOpen(true);
+    }
+  };
+
+  const handleUpdateSession = () => {
+    const [hours, minutes] = editStartTime.split(":").map(Number);
+    const timestamp = new Date(session!.startTime);
+    timestamp.setHours(hours, minutes, 0, 0);
+
+    updateSession.mutate(
+      { 
+        id: sessionId, 
+        data: {
+          busNumber: editBusNumber,
+          driverName: editDriverName,
+          route: editRoute,
+          stopBoarded: editStopBoarded,
+          startTime: timestamp.toISOString(),
+        }
+      },
+      {
+        onSuccess: () => {
+          setEditDialogOpen(false);
+        }
+      }
+    );
+  };
+
   return (
     <div className="min-h-screen bg-background pb-28">
       {/* Sticky Header with Session Info - Optimized for Mobile */}
@@ -119,9 +170,35 @@ export default function SessionDashboard() {
               <ArrowLeft className="w-5 h-5" />
               <span className="sr-only md:not-sr-only">Exit</span>
             </Link>
-            <div className="flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded-full">
-              <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-              <span className="text-xs font-semibold text-green-400 uppercase tracking-wider">Live</span>
+            <div className="flex items-center gap-2">
+              {!session.endTime && (
+                <div className="flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded-full">
+                  <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                  <span className="text-xs font-semibold text-green-400 uppercase tracking-wider">Live</span>
+                </div>
+              )}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="h-10 w-10"
+                    data-testid="button-session-menu"
+                  >
+                    <MoreVertical className="w-5 h-5" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuItem 
+                    onClick={openEditDialog}
+                    className="h-12 text-base"
+                    data-testid="menu-item-edit-session"
+                  >
+                    <Pencil className="w-4 h-4 mr-3" />
+                    Edit Session Details
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
           
@@ -315,6 +392,93 @@ export default function SessionDashboard() {
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               )}
               Generate Report
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Session Dialog */}
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Edit Session Details</DialogTitle>
+            <DialogDescription>
+              Update the session information below.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div>
+              <Label htmlFor="editBusNumber">Bus Number</Label>
+              <Input
+                id="editBusNumber"
+                value={editBusNumber}
+                onChange={(e) => setEditBusNumber(e.target.value)}
+                className="mt-2 text-lg h-12"
+                data-testid="input-edit-bus-number"
+              />
+            </div>
+            <div>
+              <Label htmlFor="editDriverName">Driver Name</Label>
+              <Input
+                id="editDriverName"
+                value={editDriverName}
+                onChange={(e) => setEditDriverName(e.target.value)}
+                className="mt-2 text-lg h-12"
+                data-testid="input-edit-driver-name"
+              />
+            </div>
+            <div>
+              <Label htmlFor="editRoute">Route</Label>
+              <Input
+                id="editRoute"
+                value={editRoute}
+                onChange={(e) => setEditRoute(e.target.value)}
+                className="mt-2 text-lg h-12"
+                placeholder="e.g. downtown, uptown, night..."
+                data-testid="input-edit-route"
+              />
+            </div>
+            <div>
+              <Label htmlFor="editStopBoarded">Stop Boarded</Label>
+              <Input
+                id="editStopBoarded"
+                value={editStopBoarded}
+                onChange={(e) => setEditStopBoarded(e.target.value)}
+                className="mt-2 text-lg h-12"
+                placeholder="1, 2, 3..."
+                data-testid="input-edit-stop-boarded"
+              />
+            </div>
+            <div>
+              <Label htmlFor="editStartTime">Start Time</Label>
+              <Input
+                id="editStartTime"
+                type="time"
+                value={editStartTime}
+                onChange={(e) => setEditStartTime(e.target.value)}
+                className="mt-2 text-lg h-12"
+                data-testid="input-edit-start-time"
+              />
+            </div>
+          </div>
+          <DialogFooter className="gap-2">
+            <Button 
+              variant="outline" 
+              onClick={() => setEditDialogOpen(false)}
+              className="h-12"
+            >
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleUpdateSession}
+              disabled={updateSession.isPending}
+              className="h-12"
+              data-testid="button-save-session"
+            >
+              {updateSession.isPending && (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              )}
+              Save Changes
             </Button>
           </DialogFooter>
         </DialogContent>

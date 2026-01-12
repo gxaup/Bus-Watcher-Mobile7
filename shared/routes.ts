@@ -48,6 +48,21 @@ export const api = {
         404: errorSchemas.notFound,
       },
     },
+    update: {
+      method: 'PATCH' as const,
+      path: '/api/sessions/:id',
+      input: z.object({
+        busNumber: z.string().optional(),
+        driverName: z.string().optional(),
+        route: z.string().optional(),
+        stopBoarded: z.string().optional(),
+        startTime: z.string().datetime().optional(),
+      }),
+      responses: {
+        200: z.custom<typeof sessions.$inferSelect>(),
+        404: errorSchemas.notFound,
+      },
+    },
     get: {
       method: 'GET' as const,
       path: '/api/sessions/:id',
