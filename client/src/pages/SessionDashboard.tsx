@@ -59,6 +59,10 @@ export default function SessionDashboard() {
   const [editStopBoarded, setEditStopBoarded] = useState("");
   const [editStartTime, setEditStartTime] = useState("");
 
+  // Dialog state for quick driver change
+  const [driverChangeOpen, setDriverChangeOpen] = useState(false);
+  const [newDriverName, setNewDriverName] = useState("");
+
   // Scroll to top on page load
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -160,6 +164,29 @@ export default function SessionDashboard() {
     );
   };
 
+  const openDriverChangeDialog = () => {
+    if (session) {
+      setNewDriverName(session.driverName);
+      setDriverChangeOpen(true);
+    }
+  };
+
+  const handleDriverChange = () => {
+    if (!newDriverName.trim()) return;
+    
+    updateSession.mutate(
+      { 
+        id: sessionId, 
+        data: { driverName: newDriverName }
+      },
+      {
+        onSuccess: () => {
+          setDriverChangeOpen(false);
+        }
+      }
+    );
+  };
+
   return (
     <div className="min-h-screen bg-background pb-28">
       {/* Sticky Header with Session Info - Optimized for Mobile */}
@@ -212,12 +239,21 @@ export default function SessionDashboard() {
               </div>
             </div>
             
-            <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-lg px-3 py-2 shrink-0">
-              <User className="w-4 h-4 text-muted-foreground" />
-              <div>
-                <p className="text-[10px] text-muted-foreground font-medium uppercase">Driver</p>
-                <p className="font-bold text-foreground text-sm truncate max-w-[100px]">{session.driverName}</p>
+            <div className="flex flex-col bg-white/5 border border-white/10 rounded-lg px-3 py-2 shrink-0">
+              <div className="flex items-center gap-2">
+                <User className="w-4 h-4 text-muted-foreground" />
+                <div>
+                  <p className="text-[10px] text-muted-foreground font-medium uppercase">Driver</p>
+                  <p className="font-bold text-foreground text-sm truncate max-w-[100px]">{session.driverName}</p>
+                </div>
               </div>
+              <button
+                onClick={openDriverChangeDialog}
+                className="mt-1 text-[10px] text-primary hover:text-primary/80 underline underline-offset-2 text-left"
+                data-testid="button-driver-changed"
+              >
+                Driver Changed?
+              </button>
             </div>
 
             <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-lg px-3 py-2 shrink-0">
@@ -479,6 +515,49 @@ export default function SessionDashboard() {
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               )}
               Save Changes
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Driver Change Dialog */}
+      <Dialog open={driverChangeOpen} onOpenChange={setDriverChangeOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Change Driver</DialogTitle>
+            <DialogDescription>
+              Enter the new driver's name.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <Label htmlFor="newDriverName">Driver Name</Label>
+            <Input
+              id="newDriverName"
+              value={newDriverName}
+              onChange={(e) => setNewDriverName(e.target.value)}
+              className="mt-2 text-lg h-12"
+              placeholder="Enter driver name"
+              data-testid="input-new-driver-name"
+            />
+          </div>
+          <DialogFooter className="gap-2">
+            <Button 
+              variant="outline" 
+              onClick={() => setDriverChangeOpen(false)}
+              className="h-12"
+            >
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleDriverChange}
+              disabled={updateSession.isPending || !newDriverName.trim()}
+              className="h-12"
+              data-testid="button-save-driver"
+            >
+              {updateSession.isPending && (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              )}
+              Save
             </Button>
           </DialogFooter>
         </DialogContent>
