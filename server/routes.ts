@@ -57,7 +57,7 @@ export async function registerRoutes(
   app.patch(api.sessions.end.path, isAuthenticated, async (req, res) => {
     try {
       const { endTime } = api.sessions.end.input.parse(req.body);
-      const session = await storage.endSession(Number(req.params.id), new Date(endTime));
+      const session = await storage.endSession(Number(req.params.id), req.user!.id, new Date(endTime));
       if (!session) return res.status(404).json({ message: "Session not found" });
       res.json(session);
     } catch (err) {
@@ -76,7 +76,7 @@ export async function registerRoutes(
       if (input.stopBoarded !== undefined) updateData.stopBoarded = input.stopBoarded;
       if (input.startTime !== undefined) updateData.startTime = new Date(input.startTime);
       
-      const session = await storage.updateSession(Number(req.params.id), updateData);
+      const session = await storage.updateSession(Number(req.params.id), req.user!.id, updateData);
       if (!session) return res.status(404).json({ message: "Session not found" });
       res.json(session);
     } catch (err) {
@@ -86,28 +86,29 @@ export async function registerRoutes(
   });
 
   app.get(api.sessions.get.path, isAuthenticated, async (req, res) => {
-    const session = await storage.getSession(Number(req.params.id));
+    const session = await storage.getUserSession(Number(req.params.id), req.user!.id);
     if (!session) return res.status(404).json({ message: "Session not found" });
     const violations = await storage.getViolations(session.id);
     res.json({ ...session, violations });
   });
 
   app.delete(api.sessions.delete.path, isAuthenticated, async (req, res) => {
-    const session = await storage.getSession(Number(req.params.id));
-    if (!session) return res.status(404).json({ message: "Session not found" });
-    await storage.deleteSession(Number(req.params.id));
+    const deleted = await storage.deleteSession(Number(req.params.id), req.user!.id);
+    if (!deleted) return res.status(404).json({ message: "Session not found" });
     res.status(204).end();
   });
 
   app.delete(api.sessions.deleteAll.path, isAuthenticated, async (req, res) => {
-    await storage.deleteAllSessions();
+    await storage.deleteAllUserSessions(req.user!.id);
     res.status(204).end();
   });
 
-  // Violations
-  app.post(api.violations.create.path, async (req, res) => {
+  // Violations (protected - verify session ownership)
+  app.post(api.violations.create.path, isAuthenticated, async (req, res) => {
     try {
       const input = api.violations.create.input.parse(req.body);
+      const session = await storage.getUserSession(input.sessionId, req.user!.id);
+      if (!session) return res.status(404).json({ message: "Session not found" });
       const violation = await storage.createViolation(input);
       res.status(201).json(violation);
     } catch (err) {
@@ -121,13 +122,21 @@ export async function registerRoutes(
     }
   });
 
-  app.get(api.violations.list.path, async (req, res) => {
-    const violations = await storage.getViolations(Number(req.params.sessionId));
+  app.get(api.violations.list.path, isAuthenticated, async (req, res) => {
+    const sessionId = Number(req.params.sessionId);
+    const session = await storage.getUserSession(sessionId, req.user!.id);
+    if (!session) return res.status(404).json({ message: "Session not found" });
+    const violations = await storage.getViolations(sessionId);
     res.json(violations);
   });
 
-  app.delete(api.violations.delete.path, async (req, res) => {
-    await storage.deleteViolation(Number(req.params.id));
+  app.delete(api.violations.delete.path, isAuthenticated, async (req, res) => {
+    const violationId = Number(req.params.id);
+    const violation = await storage.getViolationById(violationId);
+    if (!violation) return res.status(404).json({ message: "Violation not found" });
+    const session = await storage.getUserSession(violation.sessionId, req.user!.id);
+    if (!session) return res.status(404).json({ message: "Session not found" });
+    await storage.deleteViolation(violationId);
     res.status(204).end();
   });
 
@@ -153,11 +162,10 @@ export async function registerRoutes(
     }
   });
 
-  // Reports
-  app.get(api.reports.generate.path, async (req, res) => {
+  // Reports (protected)
+  app.get(api.reports.generate.path, isAuthenticated, async (req, res) => {
     const sessionId = Number(req.params.id);
-    const username = req.query.username as string | undefined;
-    const session = await storage.getSession(sessionId);
+    const session = await storage.getUserSession(sessionId, req.user!.id);
     if (!session) return res.status(404).json({ message: "Session not found" });
 
     const violations = await storage.getViolations(sessionId);
@@ -216,7 +224,7 @@ export async function registerRoutes(
     }
 
     const content = lines.join("\n");
-    const reportName = username ? `${username}_${session.busNumber}` : `Session_${session.busNumber}`;
+    const reportName = `${req.user!.displayName}_${session.busNumber}`;
     const filename = `${reportName}_${format(new Date(), "yyyyMMdd_HHmm")}.txt`;
 
     res.json({ filename, content });

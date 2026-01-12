@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { ClipboardList, Folder, Play, User } from "lucide-react";
+import { ClipboardList, Folder, Play, LogOut } from "lucide-react";
+import { useAuth } from "@/lib/auth";
 
 export default function Landing() {
   const [, setLocation] = useLocation();
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
-  const [username, setUsername] = useState("");
+  const { user, logout } = useAuth();
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -18,16 +18,7 @@ export default function Landing() {
     if (savedId) {
       setActiveSessionId(savedId);
     }
-    const savedUsername = localStorage.getItem("username");
-    if (savedUsername) {
-      setUsername(savedUsername);
-    }
   }, []);
-
-  const handleUsernameChange = (value: string) => {
-    setUsername(value);
-    localStorage.setItem("username", value);
-  };
 
   const handleResume = () => {
     if (activeSessionId) {
@@ -40,8 +31,30 @@ export default function Landing() {
     setLocation("/start");
   };
 
+  const handleLogout = async () => {
+    await logout();
+  };
+
   return (
     <div className="min-h-screen w-full bg-background flex flex-col p-4 safe-area-bottom safe-area-top">
+      <div className="absolute top-4 right-4 flex items-center gap-3">
+        {user && (
+          <>
+            <span className="text-sm text-muted-foreground hidden sm:inline" data-testid="text-user-name">
+              {user.displayName}
+            </span>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleLogout}
+              className="text-muted-foreground hover:text-foreground"
+              data-testid="button-logout"
+            >
+              <LogOut className="h-5 w-5" />
+            </Button>
+          </>
+        )}
+      </div>
       <div className="flex-1 flex items-center justify-center">
         <div className="w-full max-w-lg">
           <div className="text-center mb-10 space-y-2">
@@ -49,7 +62,7 @@ export default function Landing() {
               Full Loop Report
             </h1>
             <p className="text-base sm:text-lg text-muted-foreground">
-              Bus Violation Logging
+              {user ? `Welcome, ${user.displayName}` : "Bus Violation Logging"}
             </p>
           </div>
         

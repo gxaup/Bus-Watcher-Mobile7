@@ -23,16 +23,16 @@ export interface IStorage {
   
   // Bus Sessions
   createSession(session: InsertSession, userId: number): Promise<Session>;
-  updateSession(id: number, data: Partial<InsertSession>): Promise<Session | undefined>;
-  endSession(id: number, endTime: Date): Promise<Session>;
-  getSession(id: number): Promise<Session | undefined>;
-  getSessions(): Promise<Session[]>;
+  updateSession(id: number, userId: number, data: Partial<InsertSession>): Promise<Session | undefined>;
+  endSession(id: number, userId: number, endTime: Date): Promise<Session | undefined>;
+  getUserSession(id: number, userId: number): Promise<Session | undefined>;
   getUserSessions(userId: number): Promise<Session[]>;
-  deleteSession(id: number): Promise<void>;
-  deleteAllSessions(): Promise<void>;
+  deleteSession(id: number, userId: number): Promise<boolean>;
+  deleteAllUserSessions(userId: number): Promise<void>;
   
   // Violations
   createViolation(violation: InsertViolation): Promise<Violation>;
+  getViolationById(id: number): Promise<Violation | undefined>;
   getViolations(sessionId: number): Promise<Violation[]>;
   deleteViolation(id: number): Promise<void>;
   
@@ -103,47 +103,56 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(sessions).where(eq(sessions.userId, userId)).orderBy(desc(sessions.startTime));
   }
 
-  async updateSession(id: number, data: Partial<InsertSession>): Promise<Session | undefined> {
+  async updateSession(id: number, userId: number, data: Partial<InsertSession>): Promise<Session | undefined> {
     const [updatedSession] = await db
       .update(sessions)
       .set(data)
-      .where(eq(sessions.id, id))
+      .where(and(eq(sessions.id, id), eq(sessions.userId, userId)))
       .returning();
     return updatedSession;
   }
 
-  async endSession(id: number, endTime: Date): Promise<Session> {
+  async endSession(id: number, userId: number, endTime: Date): Promise<Session | undefined> {
     const [updatedSession] = await db
       .update(sessions)
       .set({ endTime })
-      .where(eq(sessions.id, id))
+      .where(and(eq(sessions.id, id), eq(sessions.userId, userId)))
       .returning();
     return updatedSession;
   }
 
-  async getSession(id: number): Promise<Session | undefined> {
-    const [session] = await db.select().from(sessions).where(eq(sessions.id, id));
+  async getUserSession(id: number, userId: number): Promise<Session | undefined> {
+    const [session] = await db.select().from(sessions).where(
+      and(eq(sessions.id, id), eq(sessions.userId, userId))
+    );
     return session;
   }
 
-  async getSessions(): Promise<Session[]> {
-    return await db.select().from(sessions).orderBy(desc(sessions.startTime));
-  }
-
-  async deleteSession(id: number): Promise<void> {
+  async deleteSession(id: number, userId: number): Promise<boolean> {
+    const session = await this.getUserSession(id, userId);
+    if (!session) return false;
     await db.delete(violations).where(eq(violations.sessionId, id));
-    await db.delete(sessions).where(eq(sessions.id, id));
+    await db.delete(sessions).where(and(eq(sessions.id, id), eq(sessions.userId, userId)));
+    return true;
   }
 
-  async deleteAllSessions(): Promise<void> {
-    await db.delete(violations);
-    await db.delete(sessions);
+  async deleteAllUserSessions(userId: number): Promise<void> {
+    const userSessions = await this.getUserSessions(userId);
+    for (const session of userSessions) {
+      await db.delete(violations).where(eq(violations.sessionId, session.id));
+    }
+    await db.delete(sessions).where(eq(sessions.userId, userId));
   }
 
   // Violations
   async createViolation(violation: InsertViolation): Promise<Violation> {
     const [newViolation] = await db.insert(violations).values(violation).returning();
     return newViolation;
+  }
+
+  async getViolationById(id: number): Promise<Violation | undefined> {
+    const [violation] = await db.select().from(violations).where(eq(violations.id, id));
+    return violation;
   }
 
   async getViolations(sessionId: number): Promise<Violation[]> {
