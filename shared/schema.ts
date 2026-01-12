@@ -2,8 +2,33 @@ import { pgTable, text, serial, integer, timestamp, boolean } from "drizzle-orm/
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
+// ============================================
+// USERS & AUTH
+// ============================================
+
+export const users = pgTable("users", {
+  id: serial("id").primaryKey(),
+  email: text("email").notNull().unique(),
+  passwordHash: text("password_hash").notNull(),
+  displayName: text("display_name").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const authSessions = pgTable("auth_sessions", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  token: text("token").notNull().unique(),
+  expiresAt: timestamp("expires_at").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+// ============================================
+// BUS SESSIONS & VIOLATIONS
+// ============================================
+
 export const sessions = pgTable("sessions", {
   id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(), // Foreign key to users
   busNumber: text("bus_number").notNull(),
   driverName: text("driver_name").notNull(),
   stopBoarded: text("stop_boarded").notNull(),
@@ -26,16 +51,41 @@ export const violationTypes = pgTable("violation_types", {
   isDefault: boolean("is_default").notNull().default(false),
 });
 
-// Schemas
+// ============================================
+// SCHEMAS
+// ============================================
+
+// User schemas
+export const insertUserSchema = createInsertSchema(users).omit({ id: true, createdAt: true });
+export const loginSchema = z.object({
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+});
+export const signupSchema = z.object({
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+  displayName: z.string().min(1, "Name is required"),
+});
+
+// Session schemas
 export const insertSessionSchema = createInsertSchema(sessions, {
   startTime: z.coerce.date(),
-}).omit({ id: true, endTime: true });
+}).omit({ id: true, endTime: true, userId: true });
 export const insertViolationSchema = createInsertSchema(violations, {
   timestamp: z.coerce.date(),
 }).omit({ id: true });
 export const insertViolationTypeSchema = createInsertSchema(violationTypes).omit({ id: true });
 
-// Types
+// ============================================
+// TYPES
+// ============================================
+
+// User types
+export type User = typeof users.$inferSelect;
+export type InsertUser = z.infer<typeof insertUserSchema>;
+export type AuthSession = typeof authSessions.$inferSelect;
+
+// Session types
 export type Session = typeof sessions.$inferSelect;
 export type InsertSession = z.infer<typeof insertSessionSchema>;
 export type Violation = typeof violations.$inferSelect;
@@ -43,8 +93,13 @@ export type InsertViolation = z.infer<typeof insertViolationSchema>;
 export type ViolationType = typeof violationTypes.$inferSelect;
 export type InsertViolationType = z.infer<typeof insertViolationTypeSchema>;
 
-// API Payloads
+// ============================================
+// API PAYLOADS
+// ============================================
+
 export type CreateSessionRequest = InsertSession;
 export type EndSessionRequest = { endTime: string }; // ISO string
 export type CreateViolationRequest = InsertViolation;
 export type CreateViolationTypeRequest = InsertViolationType;
+export type LoginRequest = z.infer<typeof loginSchema>;
+export type SignupRequest = z.infer<typeof signupSchema>;
