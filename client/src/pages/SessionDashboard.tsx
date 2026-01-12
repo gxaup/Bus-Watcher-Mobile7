@@ -26,7 +26,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Bus, User, MapPin, Clock, X, FileText, Loader2, ArrowLeft, Trash2, MoreVertical, Pencil } from "lucide-react";
+import { Bus, User, MapPin, Clock, X, FileText, Loader2, ArrowLeft, Trash2, Pencil } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -208,11 +208,11 @@ export default function SessionDashboard() {
                 <DropdownMenuTrigger asChild>
                   <Button 
                     variant="ghost" 
-                    size="icon" 
-                    className="h-10 w-10"
+                    className="h-10 px-3 gap-1.5"
                     data-testid="button-session-menu"
                   >
-                    <MoreVertical className="w-5 h-5" />
+                    <Pencil className="w-4 h-4" />
+                    <span className="text-sm">Edit</span>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48">
