@@ -129,8 +129,8 @@ export async function registerRoutes(
     lines.push(`Driver: ${session.driverName}`);
     lines.push(`Route: ${session.route}`);
     lines.push(`Stop Boarded: ${session.stopBoarded}`);
-    lines.push(`Start Time: ${formatInTimeZone(new Date(session.startTime), TZ, "PPpp")}`);
-    lines.push(`End Time: ${session.endTime ? formatInTimeZone(new Date(session.endTime), TZ, "PPpp") : "N/A"}`);
+    lines.push(`Start Time: ${formatInTimeZone(new Date(session.startTime), TZ, "MMM d, yyyy h:mm")}`);
+    lines.push(`End Time: ${session.endTime ? formatInTimeZone(new Date(session.endTime), TZ, "MMM d, yyyy h:mm") : "N/A"}`);
     lines.push(``);
     lines.push(`VIOLATIONS LOG (${violations.length})`);
     lines.push(`--------------------------------`);
@@ -141,7 +141,7 @@ export async function registerRoutes(
       // Group violations by type
       const grouped: Record<string, Array<{time: string, note?: string}>> = {};
       violations.forEach((v) => {
-        const timeStr = formatInTimeZone(new Date(v.timestamp), TZ, "h:mm a");
+        const timeStr = formatInTimeZone(new Date(v.timestamp), TZ, "h:mm");
         if (!grouped[v.type]) {
           grouped[v.type] = [];
         }
@@ -149,7 +149,7 @@ export async function registerRoutes(
       });
       
       for (const [type, entries] of Object.entries(grouped)) {
-        const timesWithNotes = entries.map(e => e.note ? `${e.time}, ${e.note}` : e.time);
+        const timesWithNotes = entries.map(e => e.note ? `${e.time} (${e.note})` : e.time);
         lines.push(`[${timesWithNotes.join(", ")}] || ${type}`);
       }
     }
