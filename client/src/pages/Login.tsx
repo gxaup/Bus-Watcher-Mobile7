@@ -63,14 +63,15 @@ export default function Login() {
                 name="username"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Username</FormLabel>
+                    <FormLabel>Name:</FormLabel>
                     <FormControl>
                       <Input
                         {...field}
                         type="text"
-                        placeholder="Enter your username"
+                        placeholder="Enter your name"
                         className="h-12 text-base"
                         autoComplete="username"
+                        autoFocus
                         data-testid="input-username"
                       />
                     </FormControl>

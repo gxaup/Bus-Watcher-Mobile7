@@ -71,13 +71,13 @@ export function useAuth() {
 
 export function RequireAuth({ children }: { children: ReactNode }) {
   const { user, isLoading } = useAuth();
-  const [, setLocation] = useLocation();
+  const [location, setLocation] = useLocation();
 
   useEffect(() => {
-    if (!isLoading && !user) {
+    if (!isLoading && !user && location !== "/login") {
       setLocation("/login");
     }
-  }, [user, isLoading, setLocation]);
+  }, [user, isLoading, location, setLocation]);
 
   if (isLoading) {
     return (
