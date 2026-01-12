@@ -74,7 +74,7 @@ export function CreateSessionForm() {
               <FormItem>
                 <FormLabel className="text-foreground font-medium">Bus Number</FormLabel>
                 <FormControl>
-                  <Input placeholder="e.g. 4022" className="h-12 bg-background" {...field} />
+                  <Input placeholder="e.g. 359" className="h-12 bg-background" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -88,7 +88,7 @@ export function CreateSessionForm() {
               <FormItem>
                 <FormLabel className="text-foreground font-medium">Route</FormLabel>
                 <FormControl>
-                  <Input placeholder="e.g. 55 Westbound" className="h-12 bg-background" {...field} />
+                  <Input placeholder="downtown, uptown" className="h-12 bg-background" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -116,7 +116,7 @@ export function CreateSessionForm() {
               <FormItem>
                 <FormLabel className="text-foreground font-medium">Stop Boarded</FormLabel>
                 <FormControl>
-                  <Input placeholder="e.g. Main & 5th" className="h-12 bg-background" {...field} />
+                  <Input placeholder="1,2,3…" className="h-12 bg-background" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>

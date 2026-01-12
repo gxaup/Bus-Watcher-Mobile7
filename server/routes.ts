@@ -14,7 +14,13 @@ export async function registerRoutes(
   const TZ = "America/New_York";
 
   // Seed default violation types
-  const defaultTypes = ["Standing customer", "Red light run", "Honking", "Uniform"];
+  const defaultTypes = [
+    "Customer standing while bus in motion",
+    "Ran red",
+    "Excessive Honking",
+    "Uniform",
+    "Took off while customers standing"
+  ];
   for (const name of defaultTypes) {
     const existing = await storage.getViolationTypeByName(name);
     if (!existing) {
