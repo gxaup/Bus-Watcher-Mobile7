@@ -61,11 +61,11 @@ export function ViolationButton({ sessionId, type, count }: ViolationButtonProps
       <div className="relative group">
         <Button
           variant="outline"
-          className="w-full h-24 md:h-32 flex flex-col items-center justify-center gap-2 border-2 border-border/50 hover:border-primary/50 hover:bg-primary/5 text-wrap text-center rounded-2xl shadow-sm hover:shadow-md transition-all duration-300"
+          className="w-full h-24 md:h-32 flex flex-col items-center justify-center gap-1 border-2 border-border/50 hover:border-primary/50 hover:bg-primary/5 text-wrap text-center rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 px-2"
           onClick={handleOpen}
         >
-          <AlertCircle className="w-6 h-6 md:w-8 md:h-8 text-primary mb-1" />
-          <span className="font-semibold text-sm md:text-base leading-tight">{type}</span>
+          <AlertCircle className="w-5 h-5 md:w-6 md:h-6 text-primary shrink-0" />
+          <span className="font-semibold text-xs md:text-sm leading-tight line-clamp-3 break-words">{type}</span>
         </Button>
         {count > 0 && (
           <Badge className="absolute -top-2 -right-2 w-8 h-8 flex items-center justify-center rounded-full bg-accent text-white shadow-lg border-2 border-background animate-in zoom-in">
