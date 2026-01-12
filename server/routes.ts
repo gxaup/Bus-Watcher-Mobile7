@@ -69,6 +69,18 @@ export async function registerRoutes(
     res.json({ ...session, violations });
   });
 
+  app.delete(api.sessions.delete.path, async (req, res) => {
+    const session = await storage.getSession(Number(req.params.id));
+    if (!session) return res.status(404).json({ message: "Session not found" });
+    await storage.deleteSession(Number(req.params.id));
+    res.status(204).end();
+  });
+
+  app.delete(api.sessions.deleteAll.path, async (req, res) => {
+    await storage.deleteAllSessions();
+    res.status(204).end();
+  });
+
   // Violations
   app.post(api.violations.create.path, async (req, res) => {
     try {

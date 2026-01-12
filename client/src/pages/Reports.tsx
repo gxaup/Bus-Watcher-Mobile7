@@ -1,15 +1,49 @@
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { ArrowLeft, FileText, FolderOpen, Clock, CheckCircle } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
+import { ArrowLeft, FileText, Clock, CheckCircle, Trash2 } from "lucide-react";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
+import { queryClient, apiRequest } from "@/lib/queryClient";
 import type { Session } from "@shared/schema";
 
 export default function Reports() {
   const { data: sessions, isLoading } = useQuery<Session[]>({
     queryKey: ["/api/sessions"],
   });
+
+  const deleteSession = useMutation({
+    mutationFn: async (id: number) => {
+      await apiRequest("DELETE", `/api/sessions/${id}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/sessions"] });
+    },
+  });
+
+  const deleteAllSessions = useMutation({
+    mutationFn: async () => {
+      await apiRequest("DELETE", "/api/sessions");
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/sessions"] });
+      localStorage.removeItem("activeSessionId");
+    },
+  });
+
+  const handleDelete = (e: React.MouseEvent, id: number) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (confirm("Delete this report?")) {
+      deleteSession.mutate(id);
+    }
+  };
+
+  const handleDeleteAll = () => {
+    if (confirm("Delete ALL reports? This cannot be undone.")) {
+      deleteAllSessions.mutate();
+    }
+  };
 
   const drafts = sessions?.filter(s => !s.endTime) || [];
   const completed = sessions?.filter(s => s.endTime) || [];
@@ -24,6 +58,18 @@ export default function Reports() {
             </Button>
           </Link>
           <h1 className="text-2xl font-bold">Reports</h1>
+          <div className="ml-auto">
+            <Button 
+              variant="destructive" 
+              size="sm"
+              onClick={handleDeleteAll}
+              disabled={deleteAllSessions.isPending || !sessions?.length}
+              data-testid="button-delete-all"
+            >
+              <Trash2 className="w-4 h-4 mr-2" />
+              Delete All
+            </Button>
+          </div>
         </div>
 
         <div className="space-y-6">
@@ -61,6 +107,15 @@ export default function Reports() {
                             Started {new Date(session.startTime).toLocaleDateString()}
                           </p>
                         </div>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="text-destructive hover:bg-destructive/10"
+                          onClick={(e) => handleDelete(e, session.id)}
+                          data-testid={`button-delete-session-${session.id}`}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
                       </div>
                     </Link>
                   ))}
@@ -103,6 +158,15 @@ export default function Reports() {
                             Completed {new Date(session.endTime!).toLocaleDateString()}
                           </p>
                         </div>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="text-destructive hover:bg-destructive/10"
+                          onClick={(e) => handleDelete(e, session.id)}
+                          data-testid={`button-delete-session-${session.id}`}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
                       </div>
                     </Link>
                   ))}

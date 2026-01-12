@@ -55,6 +55,21 @@ export const api = {
         200: z.custom<typeof sessions.$inferSelect & { violations: typeof violations.$inferSelect[] }>(),
         404: errorSchemas.notFound,
       },
+    },
+    delete: {
+      method: 'DELETE' as const,
+      path: '/api/sessions/:id',
+      responses: {
+        204: z.void(),
+        404: errorSchemas.notFound,
+      },
+    },
+    deleteAll: {
+      method: 'DELETE' as const,
+      path: '/api/sessions',
+      responses: {
+        204: z.void(),
+      },
     }
   },
   violations: {
