@@ -37,7 +37,7 @@ export default function Landing() {
           </p>
         </div>
         
-        <div className="space-y-4">
+        <div className="space-y-6">
           {activeSessionId && (
             <Button 
               onClick={handleResume}
