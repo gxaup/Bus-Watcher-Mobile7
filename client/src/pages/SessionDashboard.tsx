@@ -43,6 +43,18 @@ export default function SessionDashboard() {
   const [endDialogOpen, setEndDialogOpen] = useState(false);
   const [endTime, setEndTime] = useState("");
 
+  // Save current session ID to localStorage for recovery
+  useEffect(() => {
+    if (sessionId && session && !session.endTime) {
+      localStorage.setItem("activeSessionId", sessionId.toString());
+    }
+    
+    // Clear on session end
+    return () => {
+      // Don't clear if navigating away - only clear when session is ended
+    };
+  }, [sessionId, session]);
+
   // Calculate counts for badges
   const violationCounts = useMemo(() => {
     if (!violations) return {};
@@ -78,6 +90,8 @@ export default function SessionDashboard() {
       {
         onSuccess: () => {
           setEndDialogOpen(false);
+          // Clear active session from localStorage since it's now completed
+          localStorage.removeItem("activeSessionId");
           // Generate report immediately after ending
           generateReport.mutate(sessionId);
         }
