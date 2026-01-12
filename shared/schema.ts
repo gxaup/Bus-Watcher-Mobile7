@@ -48,3 +48,6 @@ export type CreateSessionRequest = InsertSession;
 export type EndSessionRequest = { endTime: string }; // ISO string
 export type CreateViolationRequest = InsertViolation;
 export type CreateViolationTypeRequest = InsertViolationType;
+
+// Auth exports
+export * from "./models/auth";

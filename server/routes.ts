@@ -4,14 +4,18 @@ import { storage } from "./storage";
 import { api } from "@shared/routes";
 import { z } from "zod";
 import { format } from "date-fns";
-
 import { formatInTimeZone } from "date-fns-tz";
+import { setupAuth, registerAuthRoutes } from "./replit_integrations/auth";
 
 export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
   const TZ = "America/New_York";
+
+  // Setup Replit Auth
+  await setupAuth(app);
+  registerAuthRoutes(app);
 
   // Seed default violation types
   const defaultTypes = [
