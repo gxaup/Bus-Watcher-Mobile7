@@ -11,13 +11,8 @@ import { useAuth } from "@/lib/auth";
 import { UserPlus, Eye, EyeOff } from "lucide-react";
 
 const signupSchema = z.object({
-  displayName: z.string().min(2, "Name must be at least 2 characters"),
-  email: z.string().email("Please enter a valid email"),
-  password: z.string().min(8, "Password must be at least 8 characters"),
-  confirmPassword: z.string(),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords don't match",
-  path: ["confirmPassword"],
+  username: z.string().min(1, "Username is required"),
+  password: z.string().min(1, "Password is required"),
 });
 
 type SignupFormData = z.infer<typeof signupSchema>;
@@ -31,17 +26,15 @@ export default function Signup() {
   const form = useForm<SignupFormData>({
     resolver: zodResolver(signupSchema),
     defaultValues: {
-      displayName: "",
-      email: "",
+      username: "",
       password: "",
-      confirmPassword: "",
     },
   });
 
   const onSubmit = async (data: SignupFormData) => {
     setIsSubmitting(true);
     try {
-      await signup(data.email, data.password, data.displayName);
+      await signup(data.username, data.password);
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : "Signup failed";
       toast({
@@ -71,39 +64,18 @@ export default function Signup() {
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
               <FormField
                 control={form.control}
-                name="displayName"
+                name="username"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Your Name</FormLabel>
+                    <FormLabel>Username</FormLabel>
                     <FormControl>
                       <Input
                         {...field}
                         type="text"
-                        placeholder="John Doe"
+                        placeholder="Choose a username"
                         className="h-12 text-base"
-                        autoComplete="name"
-                        data-testid="input-display-name"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email</FormLabel>
-                    <FormControl>
-                      <Input
-                        {...field}
-                        type="email"
-                        placeholder="you@example.com"
-                        className="h-12 text-base"
-                        autoComplete="email"
-                        data-testid="input-email"
+                        autoComplete="username"
+                        data-testid="input-username"
                       />
                     </FormControl>
                     <FormMessage />
@@ -122,7 +94,7 @@ export default function Signup() {
                         <Input
                           {...field}
                           type={showPassword ? "text" : "password"}
-                          placeholder="At least 8 characters"
+                          placeholder="Choose a password"
                           className="h-12 text-base pr-12"
                           autoComplete="new-password"
                           data-testid="input-password"
@@ -142,27 +114,6 @@ export default function Signup() {
                           )}
                         </Button>
                       </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="confirmPassword"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Confirm Password</FormLabel>
-                    <FormControl>
-                      <Input
-                        {...field}
-                        type={showPassword ? "text" : "password"}
-                        placeholder="Repeat your password"
-                        className="h-12 text-base"
-                        autoComplete="new-password"
-                        data-testid="input-confirm-password"
-                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

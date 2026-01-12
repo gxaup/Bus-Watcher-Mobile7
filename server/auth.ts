@@ -16,8 +16,7 @@ declare global {
     interface Request {
       user?: {
         id: number;
-        email: string;
-        displayName: string;
+        username: string;
       };
     }
   }
@@ -84,8 +83,7 @@ export async function isAuthenticated(req: Request, res: Response, next: NextFun
 
   req.user = {
     id: user.id,
-    email: user.email,
-    displayName: user.displayName,
+    username: user.username,
   };
 
   next();
@@ -96,17 +94,13 @@ export function registerAuthRoutes(app: Express) {
     try {
       const input = signupSchema.parse(req.body);
       
-      const existingUser = await storage.getUserByEmail(input.email.toLowerCase());
+      const existingUser = await storage.getUserByUsername(input.username);
       if (existingUser) {
-        return res.status(400).json({ message: "Email already registered" });
+        return res.status(400).json({ message: "Username already taken" });
       }
 
       const passwordHash = await hashPassword(input.password);
-      const user = await storage.createUser(
-        input.email.toLowerCase(),
-        passwordHash,
-        input.displayName
-      );
+      const user = await storage.createUser(input.username, passwordHash);
 
       const token = generateToken(user.id);
       const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
@@ -122,8 +116,7 @@ export function registerAuthRoutes(app: Express) {
       res.status(201).json({
         user: {
           id: user.id,
-          email: user.email,
-          displayName: user.displayName,
+          username: user.username,
         },
       });
     } catch (err) {
@@ -139,14 +132,14 @@ export function registerAuthRoutes(app: Express) {
     try {
       const input = loginSchema.parse(req.body);
       
-      const user = await storage.getUserByEmail(input.email.toLowerCase());
+      const user = await storage.getUserByUsername(input.username);
       if (!user) {
-        return res.status(401).json({ message: "Invalid email or password" });
+        return res.status(401).json({ message: "Invalid username or password" });
       }
 
       const validPassword = await verifyPassword(user.passwordHash, input.password);
       if (!validPassword) {
-        return res.status(401).json({ message: "Invalid email or password" });
+        return res.status(401).json({ message: "Invalid username or password" });
       }
 
       const token = generateToken(user.id);
@@ -163,8 +156,7 @@ export function registerAuthRoutes(app: Express) {
       res.json({
         user: {
           id: user.id,
-          email: user.email,
-          displayName: user.displayName,
+          username: user.username,
         },
       });
     } catch (err) {

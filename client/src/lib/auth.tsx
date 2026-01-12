@@ -4,15 +4,14 @@ import { useLocation } from "wouter";
 
 interface User {
   id: number;
-  email: string;
-  displayName: string;
+  username: string;
 }
 
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  signup: (email: string, password: string, displayName: string) => Promise<void>;
+  login: (username: string, password: string) => Promise<void>;
+  signup: (username: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -43,15 +42,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     checkAuth();
   }, [checkAuth]);
 
-  const login = async (email: string, password: string) => {
-    const response = await apiRequest("POST", "/api/auth/login", { email, password });
+  const login = async (username: string, password: string) => {
+    const response = await apiRequest("POST", "/api/auth/login", { username, password });
     const data = await response.json();
     setUser(data.user);
     setLocation("/");
   };
 
-  const signup = async (email: string, password: string, displayName: string) => {
-    const response = await apiRequest("POST", "/api/auth/signup", { email, password, displayName });
+  const signup = async (username: string, password: string) => {
+    const response = await apiRequest("POST", "/api/auth/signup", { username, password });
     const data = await response.json();
     setUser(data.user);
     setLocation("/");

@@ -41,7 +41,7 @@ export default function Landing() {
         {user && (
           <>
             <span className="text-sm text-muted-foreground hidden sm:inline" data-testid="text-user-name">
-              {user.displayName}
+              {user.username}
             </span>
             <Button
               variant="ghost"
@@ -62,7 +62,7 @@ export default function Landing() {
               Full Loop Report
             </h1>
             <p className="text-base sm:text-lg text-muted-foreground">
-              {user ? `Welcome, ${user.displayName}` : "Bus Violation Logging"}
+              {user ? `Welcome, ${user.username}` : "Bus Violation Logging"}
             </p>
           </div>
         

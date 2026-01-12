@@ -10,8 +10,8 @@ import { eq, desc, and, gt, lt } from "drizzle-orm";
 
 export interface IStorage {
   // Users
-  createUser(email: string, passwordHash: string, displayName: string): Promise<User>;
-  getUserByEmail(email: string): Promise<User | undefined>;
+  createUser(username: string, passwordHash: string): Promise<User>;
+  getUserByUsername(username: string): Promise<User | undefined>;
   getUserById(id: number): Promise<User | undefined>;
   
   // Auth Sessions
@@ -45,17 +45,16 @@ export interface IStorage {
 
 export class DatabaseStorage implements IStorage {
   // Users
-  async createUser(email: string, passwordHash: string, displayName: string): Promise<User> {
+  async createUser(username: string, passwordHash: string): Promise<User> {
     const [newUser] = await db.insert(users).values({
-      email,
+      username,
       passwordHash,
-      displayName,
     }).returning();
     return newUser;
   }
 
-  async getUserByEmail(email: string): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.email, email));
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.username, username));
     return user;
   }
 

@@ -11,7 +11,7 @@ import { useAuth } from "@/lib/auth";
 import { LogIn, Eye, EyeOff } from "lucide-react";
 
 const loginSchema = z.object({
-  email: z.string().email("Please enter a valid email"),
+  username: z.string().min(1, "Username is required"),
   password: z.string().min(1, "Password is required"),
 });
 
@@ -26,7 +26,7 @@ export default function Login() {
   const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: "",
+      username: "",
       password: "",
     },
   });
@@ -34,7 +34,7 @@ export default function Login() {
   const onSubmit = async (data: LoginFormData) => {
     setIsSubmitting(true);
     try {
-      await login(data.email, data.password);
+      await login(data.username, data.password);
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : "Login failed";
       toast({
@@ -64,18 +64,18 @@ export default function Login() {
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <FormField
                 control={form.control}
-                name="email"
+                name="username"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email</FormLabel>
+                    <FormLabel>Username</FormLabel>
                     <FormControl>
                       <Input
                         {...field}
-                        type="email"
-                        placeholder="you@example.com"
+                        type="text"
+                        placeholder="Enter your username"
                         className="h-12 text-base"
-                        autoComplete="email"
-                        data-testid="input-email"
+                        autoComplete="username"
+                        data-testid="input-username"
                       />
                     </FormControl>
                     <FormMessage />

@@ -224,7 +224,7 @@ export async function registerRoutes(
     }
 
     const content = lines.join("\n");
-    const reportName = `${req.user!.displayName}_${session.busNumber}`;
+    const reportName = `${req.user!.username}_${session.busNumber}`;
     const filename = `${reportName}_${format(new Date(), "yyyyMMdd_HHmm")}.txt`;
 
     res.json({ filename, content });
