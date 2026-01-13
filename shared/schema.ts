@@ -49,6 +49,12 @@ export const violationTypes = pgTable("violation_types", {
   isDefault: boolean("is_default").notNull().default(false),
 });
 
+export const drivers = pgTable("drivers", {
+  id: serial("id").primaryKey(),
+  driverName: text("driver_name").notNull().unique(),
+  lastReportDate: timestamp("last_report_date").notNull().defaultNow(),
+});
+
 // ============================================
 // SCHEMAS
 // ============================================
@@ -84,6 +90,7 @@ export type Violation = typeof violations.$inferSelect;
 export type InsertViolation = z.infer<typeof insertViolationSchema>;
 export type ViolationType = typeof violationTypes.$inferSelect;
 export type InsertViolationType = z.infer<typeof insertViolationTypeSchema>;
+export type Driver = typeof drivers.$inferSelect;
 
 // ============================================
 // API PAYLOADS

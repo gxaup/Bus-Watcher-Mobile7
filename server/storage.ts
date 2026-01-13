@@ -1,12 +1,12 @@
 import { db } from "./db";
 import { 
-  sessions, violations, violationTypes, users, authSessions,
+  sessions, violations, violationTypes, users, authSessions, drivers,
   type Session, type InsertSession, 
   type Violation, type InsertViolation,
   type ViolationType, type InsertViolationType,
-  type User, type AuthSession
+  type User, type AuthSession, type Driver
 } from "@shared/schema";
-import { eq, desc, and, gt, lt, sql } from "drizzle-orm";
+import { eq, desc, and, gt, lt } from "drizzle-orm";
 
 export interface DriverInfo {
   driverName: string;
@@ -47,8 +47,9 @@ export interface IStorage {
   getViolationTypeByName(name: string): Promise<ViolationType | undefined>;
   deleteCustomViolationTypes(): Promise<void>;
   
-  // Drivers (cross-user)
+  // Drivers (cross-user, persisted independently)
   getAllDrivers(): Promise<DriverInfo[]>;
+  upsertDriver(driverName: string, reportDate: Date): Promise<void>;
   deleteDriverByName(driverName: string): Promise<void>;
   deleteAllDrivers(): Promise<void>;
 }
@@ -104,6 +105,9 @@ export class DatabaseStorage implements IStorage {
   // Bus Sessions
   async createSession(session: InsertSession, userId: number): Promise<Session> {
     const [newSession] = await db.insert(sessions).values({ ...session, userId }).returning();
+    if (session.driverName && session.driverName.trim() !== '') {
+      await this.upsertDriver(session.driverName, newSession.startTime);
+    }
     return newSession;
   }
   
@@ -196,13 +200,9 @@ export class DatabaseStorage implements IStorage {
 
   async getAllDrivers(): Promise<DriverInfo[]> {
     const result = await db
-      .select({
-        driverName: sessions.driverName,
-        lastReportDate: sql<Date>`MAX(${sessions.startTime})`.as('last_report_date'),
-      })
-      .from(sessions)
-      .groupBy(sessions.driverName)
-      .orderBy(desc(sql`MAX(${sessions.startTime})`));
+      .select()
+      .from(drivers)
+      .orderBy(desc(drivers.lastReportDate));
     
     return result.map(r => ({
       driverName: r.driverName,
@@ -210,17 +210,23 @@ export class DatabaseStorage implements IStorage {
     }));
   }
 
-  async deleteDriverByName(driverName: string): Promise<void> {
-    const driverSessions = await db.select().from(sessions).where(eq(sessions.driverName, driverName));
-    for (const session of driverSessions) {
-      await db.delete(violations).where(eq(violations.sessionId, session.id));
+  async upsertDriver(driverName: string, reportDate: Date): Promise<void> {
+    if (!driverName || driverName.trim() === '') return;
+    
+    const existing = await db.select().from(drivers).where(eq(drivers.driverName, driverName));
+    if (existing.length === 0) {
+      await db.insert(drivers).values({ driverName, lastReportDate: reportDate });
+    } else if (existing[0].lastReportDate < reportDate) {
+      await db.update(drivers).set({ lastReportDate: reportDate }).where(eq(drivers.driverName, driverName));
     }
-    await db.delete(sessions).where(eq(sessions.driverName, driverName));
+  }
+
+  async deleteDriverByName(driverName: string): Promise<void> {
+    await db.delete(drivers).where(eq(drivers.driverName, driverName));
   }
 
   async deleteAllDrivers(): Promise<void> {
-    await db.delete(violations);
-    await db.delete(sessions);
+    await db.delete(drivers);
   }
 }
 
