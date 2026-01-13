@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { ClipboardList, Folder, Play, LogOut, Users, Trash2, RefreshCw } from "lucide-react";
+import { ClipboardList, Folder, Play, LogOut, Users, Trash2, RefreshCw, Pencil, Check, X } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
@@ -28,6 +28,8 @@ export default function Landing() {
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
   const [driversOpen, setDriversOpen] = useState(false);
   const [selectedDrivers, setSelectedDrivers] = useState<Set<string>>(new Set());
+  const [editingDriver, setEditingDriver] = useState<string | null>(null);
+  const [editDate, setEditDate] = useState("");
   const { user, logout } = useAuth();
   const { toast } = useToast();
 
@@ -57,6 +59,37 @@ export default function Landing() {
       toast({ title: "All drivers deleted" });
     },
   });
+
+  const updateDriverDateMutation = useMutation({
+    mutationFn: async ({ driverName, newDate }: { driverName: string; newDate: string }) => {
+      await apiRequest("PATCH", `/api/drivers/${encodeURIComponent(driverName)}`, {
+        lastReportDate: newDate,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/drivers"] });
+      setEditingDriver(null);
+      setEditDate("");
+      toast({ title: "Date updated" });
+    },
+  });
+
+  const startEditing = (driverName: string, currentDate: string) => {
+    setEditingDriver(driverName);
+    setEditDate(format(new Date(currentDate), "yyyy-MM-dd"));
+  };
+
+  const cancelEditing = () => {
+    setEditingDriver(null);
+    setEditDate("");
+  };
+
+  const saveEdit = (driverName: string) => {
+    if (editDate) {
+      const isoDate = new Date(editDate).toISOString();
+      updateDriverDateMutation.mutate({ driverName, newDate: isoDate });
+    }
+  };
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -240,31 +273,61 @@ export default function Landing() {
                     {drivers.map((driver, index) => {
                       const { label, variant } = getSuitabilityLabel(driver.lastReportDate);
                       const isSelected = selectedDrivers.has(driver.driverName);
+                      const isEditing = editingDriver === driver.driverName;
                       return (
-                        <label 
+                        <div
                           key={index}
-                          className={`flex items-center gap-4 py-4 px-4 transition-colors cursor-pointer select-none ${
+                          className={`flex items-center gap-3 py-3 px-4 transition-colors ${
                             isSelected ? "bg-primary/10" : "hover:bg-muted/30"
                           }`}
                           data-testid={`driver-item-${index}`}
                         >
-                          <Checkbox
-                            checked={isSelected}
-                            onCheckedChange={() => toggleDriverSelection(driver.driverName)}
-                            className="h-6 w-6"
-                            data-testid={`checkbox-driver-${index}`}
-                          />
-                          <div className="flex-1 min-w-0 flex items-center justify-between gap-2">
-                            <div className="min-w-0">
-                              <p className="font-medium text-foreground truncate text-sm" data-testid={`text-driver-name-${index}`}>
-                                {driver.driverName}
-                              </p>
+                          <label className="flex items-center cursor-pointer">
+                            <Checkbox
+                              checked={isSelected}
+                              onCheckedChange={() => toggleDriverSelection(driver.driverName)}
+                              className="h-6 w-6"
+                              data-testid={`checkbox-driver-${index}`}
+                            />
+                          </label>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-foreground truncate text-sm" data-testid={`text-driver-name-${index}`}>
+                              {driver.driverName}
+                            </p>
+                            {isEditing ? (
+                              <div className="flex items-center gap-2 mt-1">
+                                <input
+                                  type="date"
+                                  value={editDate}
+                                  onChange={(e) => setEditDate(e.target.value)}
+                                  className="text-xs px-2 py-1 border rounded bg-background"
+                                  data-testid={`input-edit-date-${index}`}
+                                />
+                                <button
+                                  onClick={() => saveEdit(driver.driverName)}
+                                  disabled={updateDriverDateMutation.isPending}
+                                  className="p-1 text-green-600 hover:text-green-700"
+                                  data-testid={`button-save-date-${index}`}
+                                >
+                                  <Check className="w-4 h-4" />
+                                </button>
+                                <button
+                                  onClick={cancelEditing}
+                                  className="p-1 text-muted-foreground hover:text-foreground"
+                                  data-testid={`button-cancel-edit-${index}`}
+                                >
+                                  <X className="w-4 h-4" />
+                                </button>
+                              </div>
+                            ) : (
                               <p className="text-xs text-muted-foreground" data-testid={`text-driver-date-${index}`}>
                                 {formatDate(driver.lastReportDate)}
                               </p>
-                            </div>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-2 shrink-0">
                             <span 
-                              className={`text-xs font-medium px-2 py-0.5 rounded-full shrink-0 ${
+                              className={`text-xs font-medium px-2 py-0.5 rounded-full ${
                                 variant === "default" 
                                   ? "bg-green-500/10 text-green-600 dark:text-green-400" 
                                   : "bg-red-500/10 text-red-600 dark:text-red-400"
@@ -273,8 +336,17 @@ export default function Landing() {
                             >
                               {label}
                             </span>
+                            {!isEditing && (
+                              <button
+                                onClick={() => startEditing(driver.driverName, driver.lastReportDate)}
+                                className="p-1 text-muted-foreground hover:text-foreground transition-colors"
+                                data-testid={`button-edit-date-${index}`}
+                              >
+                                <Pencil className="w-4 h-4" />
+                              </button>
+                            )}
                           </div>
-                        </label>
+                        </div>
                       );
                     })}
                   </div>

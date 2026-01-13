@@ -176,6 +176,29 @@ export async function registerRoutes(
     })));
   });
 
+  app.patch(api.drivers.update.path, isAuthenticated, async (req, res) => {
+    try {
+      const driverName = decodeURIComponent(req.params.name);
+      const input = api.drivers.update.input.parse(req.body);
+      const updated = await storage.updateDriverDate(driverName, new Date(input.lastReportDate));
+      if (!updated) {
+        return res.status(404).json({ message: "Driver not found" });
+      }
+      res.json({
+        driverName: updated.driverName,
+        lastReportDate: updated.lastReportDate.toISOString(),
+      });
+    } catch (err) {
+      if (err instanceof z.ZodError) {
+        return res.status(400).json({
+          message: err.errors[0].message,
+          field: err.errors[0].path.join('.'),
+        });
+      }
+      throw err;
+    }
+  });
+
   app.delete(api.drivers.delete.path, isAuthenticated, async (req, res) => {
     const driverName = decodeURIComponent(req.params.name);
     await storage.deleteDriverByName(driverName);

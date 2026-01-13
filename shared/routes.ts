@@ -165,6 +165,20 @@ export const api = {
         }),
       },
     },
+    update: {
+      method: 'PATCH' as const,
+      path: '/api/drivers/:name',
+      input: z.object({
+        lastReportDate: z.string().datetime(),
+      }),
+      responses: {
+        200: z.object({
+          driverName: z.string(),
+          lastReportDate: z.string(),
+        }),
+        404: errorSchemas.notFound,
+      },
+    },
     delete: {
       method: 'DELETE' as const,
       path: '/api/drivers/:name',
