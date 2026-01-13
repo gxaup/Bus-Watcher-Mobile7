@@ -61,6 +61,7 @@ export function useEndSession() {
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: [api.sessions.get.path, variables.id] });
+      queryClient.invalidateQueries({ queryKey: ["/api/sessions"] });
     },
     onError: (error) => {
       toast({
