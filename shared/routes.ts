@@ -143,7 +143,19 @@ export const api = {
         404: errorSchemas.notFound,
       },
     }
-  }
+  },
+  drivers: {
+    list: {
+      method: 'GET' as const,
+      path: '/api/drivers',
+      responses: {
+        200: z.array(z.object({
+          driverName: z.string(),
+          lastReportDate: z.string(),
+        })),
+      },
+    },
+  },
 };
 
 export function buildUrl(path: string, params?: Record<string, string | number>): string {

@@ -163,6 +163,15 @@ export async function registerRoutes(
   });
 
   // Reports (protected)
+  // Drivers list (cross-user - shows all driver names from all reports)
+  app.get(api.drivers.list.path, isAuthenticated, async (req, res) => {
+    const drivers = await storage.getAllDrivers();
+    res.json(drivers.map(d => ({
+      driverName: d.driverName,
+      lastReportDate: d.lastReportDate.toISOString(),
+    })));
+  });
+
   app.get(api.reports.generate.path, isAuthenticated, async (req, res) => {
     const sessionId = Number(req.params.id);
     const session = await storage.getUserSession(sessionId, req.user!.id);

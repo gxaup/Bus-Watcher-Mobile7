@@ -6,7 +6,12 @@ import {
   type ViolationType, type InsertViolationType,
   type User, type AuthSession
 } from "@shared/schema";
-import { eq, desc, and, gt, lt } from "drizzle-orm";
+import { eq, desc, and, gt, lt, sql } from "drizzle-orm";
+
+export interface DriverInfo {
+  driverName: string;
+  lastReportDate: Date;
+}
 
 export interface IStorage {
   // Users
@@ -41,6 +46,9 @@ export interface IStorage {
   getViolationTypes(): Promise<ViolationType[]>;
   getViolationTypeByName(name: string): Promise<ViolationType | undefined>;
   deleteCustomViolationTypes(): Promise<void>;
+  
+  // Drivers (cross-user)
+  getAllDrivers(): Promise<DriverInfo[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -182,6 +190,22 @@ export class DatabaseStorage implements IStorage {
 
   async deleteCustomViolationTypes(): Promise<void> {
     await db.delete(violationTypes).where(eq(violationTypes.isDefault, false));
+  }
+
+  async getAllDrivers(): Promise<DriverInfo[]> {
+    const result = await db
+      .select({
+        driverName: sessions.driverName,
+        lastReportDate: sql<Date>`MAX(${sessions.startTime})`.as('last_report_date'),
+      })
+      .from(sessions)
+      .groupBy(sessions.driverName)
+      .orderBy(desc(sql`MAX(${sessions.startTime})`));
+    
+    return result.map(r => ({
+      driverName: r.driverName,
+      lastReportDate: new Date(r.lastReportDate),
+    }));
   }
 }
 
