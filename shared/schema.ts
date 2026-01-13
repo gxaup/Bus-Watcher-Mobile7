@@ -53,6 +53,7 @@ export const drivers = pgTable("drivers", {
   id: serial("id").primaryKey(),
   driverName: text("driver_name").notNull().unique(),
   lastReportDate: timestamp("last_report_date").notNull().defaultNow(),
+  isArchived: boolean("is_archived").notNull().default(false),
 });
 
 // ============================================

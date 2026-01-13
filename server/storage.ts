@@ -204,6 +204,7 @@ export class DatabaseStorage implements IStorage {
     const result = await db
       .select()
       .from(drivers)
+      .where(eq(drivers.isArchived, false))
       .orderBy(desc(drivers.lastReportDate));
     
     return result.map(r => ({
@@ -231,6 +232,7 @@ export class DatabaseStorage implements IStorage {
       await db.insert(drivers).values({ driverName, lastReportDate: reportDate });
       return true;
     }
+    // If driver exists but is archived, don't unarchive (respect manual deletion)
     return false;
   }
 
@@ -245,7 +247,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteDriverByName(driverName: string): Promise<void> {
-    await db.delete(drivers).where(eq(drivers.driverName, driverName));
+    await db.update(drivers).set({ isArchived: true }).where(eq(drivers.driverName, driverName));
   }
 
   async deleteAllDrivers(): Promise<void> {
