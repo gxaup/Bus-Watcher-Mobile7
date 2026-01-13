@@ -240,18 +240,20 @@ export default function Landing() {
                       return (
                         <div 
                           key={index}
-                          className={`flex items-center gap-3 py-3 px-2 transition-colors cursor-pointer ${
+                          className={`flex items-center gap-3 py-4 px-3 transition-colors cursor-pointer ${
                             isSelected ? "bg-primary/5" : "hover:bg-muted/20"
                           }`}
                           onClick={() => toggleDriverSelection(driver.driverName)}
                           data-testid={`driver-item-${index}`}
                         >
-                          <Checkbox
-                            checked={isSelected}
-                            onCheckedChange={() => toggleDriverSelection(driver.driverName)}
-                            className="h-4 w-4 rounded-sm"
-                            data-testid={`checkbox-driver-${index}`}
-                          />
+                          <div className="flex items-center justify-center w-8 h-8 -m-1">
+                            <Checkbox
+                              checked={isSelected}
+                              onCheckedChange={() => toggleDriverSelection(driver.driverName)}
+                              className="h-5 w-5 rounded"
+                              data-testid={`checkbox-driver-${index}`}
+                            />
+                          </div>
                           <div className="flex-1 min-w-0 flex items-center justify-between gap-2">
                             <div className="min-w-0">
                               <p className="font-medium text-foreground truncate text-sm" data-testid={`text-driver-name-${index}`}>
