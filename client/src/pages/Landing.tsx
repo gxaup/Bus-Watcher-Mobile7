@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
-import { format, differenceInDays } from "date-fns";
+import { format, differenceInDays, isToday, isYesterday } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 
 interface DriverInfo {
@@ -91,6 +91,15 @@ export default function Landing() {
       return { label: "Suitable", variant: "default" as const };
     }
     return { label: "Unsuitable", variant: "destructive" as const };
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    if (isToday(date)) return "Today";
+    if (isYesterday(date)) return "Yesterday";
+    const daysDiff = differenceInDays(new Date(), date);
+    if (daysDiff < 7) return `${daysDiff} days ago`;
+    return format(date, "MMM d, yyyy");
   };
 
   const toggleDriverSelection = (driverName: string) => {
@@ -198,8 +207,11 @@ export default function Landing() {
               </Button>
             </DialogTrigger>
             <DialogContent className="max-w-md max-h-[80vh] flex flex-col">
-              <DialogHeader>
-                <DialogTitle>Reported Drivers</DialogTitle>
+              <DialogHeader className="pb-2">
+                <DialogTitle className="text-xl">Reported Drivers</DialogTitle>
+                {drivers.length > 0 && (
+                  <p className="text-sm text-muted-foreground">{drivers.length} driver{drivers.length !== 1 ? "s" : ""} on record</p>
+                )}
               </DialogHeader>
               <div className="flex-1 overflow-y-auto space-y-2 mt-4">
                 {driversLoading ? (
@@ -211,28 +223,34 @@ export default function Landing() {
                 ) : (
                   drivers.map((driver, index) => {
                     const { label, variant } = getSuitabilityLabel(driver.lastReportDate);
-                    const date = new Date(driver.lastReportDate);
                     const isSelected = selectedDrivers.has(driver.driverName);
                     return (
                       <div 
                         key={index}
-                        className="flex items-center gap-3 p-3 rounded-md bg-muted/50"
+                        className={`flex items-center gap-3 p-4 rounded-lg border transition-colors ${
+                          isSelected ? "bg-primary/5 border-primary/30" : "bg-card border-border hover:bg-muted/30"
+                        }`}
                         data-testid={`driver-item-${index}`}
                       >
                         <Checkbox
                           checked={isSelected}
                           onCheckedChange={() => toggleDriverSelection(driver.driverName)}
+                          className="h-5 w-5"
                           data-testid={`checkbox-driver-${index}`}
                         />
                         <div className="flex-1 min-w-0">
-                          <p className="font-medium truncate" data-testid={`text-driver-name-${index}`}>
+                          <p className="font-semibold text-foreground truncate" data-testid={`text-driver-name-${index}`}>
                             {driver.driverName}
                           </p>
-                          <p className="text-sm text-muted-foreground" data-testid={`text-driver-date-${index}`}>
-                            {format(date, "MMM d, yyyy")}
+                          <p className="text-sm text-muted-foreground mt-0.5" data-testid={`text-driver-date-${index}`}>
+                            {formatDate(driver.lastReportDate)}
                           </p>
                         </div>
-                        <Badge variant={variant} data-testid={`badge-suitability-${index}`}>
+                        <Badge 
+                          variant={variant} 
+                          className={variant === "default" ? "bg-green-500/15 text-green-600 dark:text-green-400 border-green-500/30" : ""}
+                          data-testid={`badge-suitability-${index}`}
+                        >
                           {label}
                         </Badge>
                       </div>
@@ -241,26 +259,28 @@ export default function Landing() {
                 )}
               </div>
               {drivers.length > 0 && (
-                <DialogFooter className="flex-col sm:flex-row gap-2 mt-4">
-                  <Button
-                    variant="destructive"
-                    onClick={handleDeleteSelected}
-                    disabled={selectedDrivers.size === 0 || deleteDriverMutation.isPending}
-                    className="w-full sm:w-auto"
-                    data-testid="button-delete-selected"
-                  >
-                    <Trash2 className="w-4 h-4 mr-2" />
-                    Delete Selected ({selectedDrivers.size})
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={handleDeleteAll}
-                    disabled={deleteAllDriversMutation.isPending}
-                    className="w-full sm:w-auto border-destructive text-destructive hover:bg-destructive/10"
-                    data-testid="button-delete-all"
-                  >
-                    Delete All
-                  </Button>
+                <DialogFooter className="flex-col gap-2 mt-4 pt-4 border-t">
+                  <div className="flex flex-col sm:flex-row gap-2 w-full">
+                    <Button
+                      variant="destructive"
+                      onClick={handleDeleteSelected}
+                      disabled={selectedDrivers.size === 0 || deleteDriverMutation.isPending}
+                      className="flex-1"
+                      data-testid="button-delete-selected"
+                    >
+                      <Trash2 className="w-4 h-4 mr-2" />
+                      Delete Selected ({selectedDrivers.size})
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={handleDeleteAll}
+                      disabled={deleteAllDriversMutation.isPending}
+                      className="flex-1 border-destructive/50 text-destructive hover:bg-destructive/10"
+                      data-testid="button-delete-all"
+                    >
+                      Delete All
+                    </Button>
+                  </div>
                 </DialogFooter>
               )}
             </DialogContent>
