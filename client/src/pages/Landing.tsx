@@ -1,18 +1,22 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { ClipboardList, Folder, Play, LogOut, Users } from "lucide-react";
+import { ClipboardList, Folder, Play, LogOut, Users, Trash2 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogFooter,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { formatDistanceToNow, differenceInDays } from "date-fns";
+import { Checkbox } from "@/components/ui/checkbox";
+import { format, differenceInDays } from "date-fns";
+import { useToast } from "@/hooks/use-toast";
 
 interface DriverInfo {
   driverName: string;
@@ -23,11 +27,35 @@ export default function Landing() {
   const [, setLocation] = useLocation();
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
   const [driversOpen, setDriversOpen] = useState(false);
+  const [selectedDrivers, setSelectedDrivers] = useState<Set<string>>(new Set());
   const { user, logout } = useAuth();
+  const { toast } = useToast();
 
   const { data: drivers = [], isLoading: driversLoading } = useQuery<DriverInfo[]>({
     queryKey: ["/api/drivers"],
     enabled: driversOpen,
+  });
+
+  const deleteDriverMutation = useMutation({
+    mutationFn: async (driverName: string) => {
+      await apiRequest("DELETE", `/api/drivers/${encodeURIComponent(driverName)}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/drivers"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/sessions"] });
+    },
+  });
+
+  const deleteAllDriversMutation = useMutation({
+    mutationFn: async () => {
+      await apiRequest("DELETE", "/api/drivers");
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/drivers"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/sessions"] });
+      setSelectedDrivers(new Set());
+      toast({ title: "All drivers deleted" });
+    },
   });
 
   useEffect(() => {
@@ -63,6 +91,31 @@ export default function Landing() {
       return { label: "Suitable", variant: "default" as const };
     }
     return { label: "Unsuitable", variant: "destructive" as const };
+  };
+
+  const toggleDriverSelection = (driverName: string) => {
+    setSelectedDrivers(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(driverName)) {
+        newSet.delete(driverName);
+      } else {
+        newSet.add(driverName);
+      }
+      return newSet;
+    });
+  };
+
+  const handleDeleteSelected = async () => {
+    const driversToDelete = Array.from(selectedDrivers);
+    for (const driverName of driversToDelete) {
+      await deleteDriverMutation.mutateAsync(driverName);
+    }
+    setSelectedDrivers(new Set());
+    toast({ title: `${driversToDelete.length} driver(s) deleted` });
+  };
+
+  const handleDeleteAll = () => {
+    deleteAllDriversMutation.mutate();
   };
 
   return (
@@ -130,7 +183,10 @@ export default function Landing() {
             </Link>
           </div>
 
-          <Dialog open={driversOpen} onOpenChange={setDriversOpen}>
+          <Dialog open={driversOpen} onOpenChange={(open) => {
+            setDriversOpen(open);
+            if (!open) setSelectedDrivers(new Set());
+          }}>
             <DialogTrigger asChild>
               <Button 
                 variant="outline"
@@ -141,11 +197,11 @@ export default function Landing() {
                 Driver List
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-md max-h-[80vh] overflow-y-auto">
+            <DialogContent className="max-w-md max-h-[80vh] flex flex-col">
               <DialogHeader>
                 <DialogTitle>Reported Drivers</DialogTitle>
               </DialogHeader>
-              <div className="space-y-2 mt-4">
+              <div className="flex-1 overflow-y-auto space-y-2 mt-4">
                 {driversLoading ? (
                   <div className="flex items-center justify-center py-8">
                     <div className="animate-spin h-6 w-6 border-2 border-primary border-t-transparent rounded-full" />
@@ -156,18 +212,24 @@ export default function Landing() {
                   drivers.map((driver, index) => {
                     const { label, variant } = getSuitabilityLabel(driver.lastReportDate);
                     const date = new Date(driver.lastReportDate);
+                    const isSelected = selectedDrivers.has(driver.driverName);
                     return (
                       <div 
                         key={index}
-                        className="flex items-center justify-between p-3 rounded-md bg-muted/50"
+                        className="flex items-center gap-3 p-3 rounded-md bg-muted/50"
                         data-testid={`driver-item-${index}`}
                       >
+                        <Checkbox
+                          checked={isSelected}
+                          onCheckedChange={() => toggleDriverSelection(driver.driverName)}
+                          data-testid={`checkbox-driver-${index}`}
+                        />
                         <div className="flex-1 min-w-0">
                           <p className="font-medium truncate" data-testid={`text-driver-name-${index}`}>
                             {driver.driverName}
                           </p>
                           <p className="text-sm text-muted-foreground" data-testid={`text-driver-date-${index}`}>
-                            {formatDistanceToNow(date, { addSuffix: true })}
+                            {format(date, "MMM d, yyyy")}
                           </p>
                         </div>
                         <Badge variant={variant} data-testid={`badge-suitability-${index}`}>
@@ -178,6 +240,29 @@ export default function Landing() {
                   })
                 )}
               </div>
+              {drivers.length > 0 && (
+                <DialogFooter className="flex-col sm:flex-row gap-2 mt-4">
+                  <Button
+                    variant="destructive"
+                    onClick={handleDeleteSelected}
+                    disabled={selectedDrivers.size === 0 || deleteDriverMutation.isPending}
+                    className="w-full sm:w-auto"
+                    data-testid="button-delete-selected"
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Delete Selected ({selectedDrivers.size})
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={handleDeleteAll}
+                    disabled={deleteAllDriversMutation.isPending}
+                    className="w-full sm:w-auto border-destructive text-destructive hover:bg-destructive/10"
+                    data-testid="button-delete-all"
+                  >
+                    Delete All
+                  </Button>
+                </DialogFooter>
+              )}
             </DialogContent>
           </Dialog>
         </div>

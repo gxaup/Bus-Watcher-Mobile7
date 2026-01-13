@@ -172,6 +172,17 @@ export async function registerRoutes(
     })));
   });
 
+  app.delete(api.drivers.delete.path, isAuthenticated, async (req, res) => {
+    const driverName = decodeURIComponent(req.params.name);
+    await storage.deleteDriverByName(driverName);
+    res.status(204).end();
+  });
+
+  app.delete(api.drivers.deleteAll.path, isAuthenticated, async (req, res) => {
+    await storage.deleteAllDrivers();
+    res.status(204).end();
+  });
+
   app.get(api.reports.generate.path, isAuthenticated, async (req, res) => {
     const sessionId = Number(req.params.id);
     const session = await storage.getUserSession(sessionId, req.user!.id);

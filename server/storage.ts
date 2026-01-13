@@ -49,6 +49,8 @@ export interface IStorage {
   
   // Drivers (cross-user)
   getAllDrivers(): Promise<DriverInfo[]>;
+  deleteDriverByName(driverName: string): Promise<void>;
+  deleteAllDrivers(): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -206,6 +208,19 @@ export class DatabaseStorage implements IStorage {
       driverName: r.driverName,
       lastReportDate: new Date(r.lastReportDate),
     }));
+  }
+
+  async deleteDriverByName(driverName: string): Promise<void> {
+    const driverSessions = await db.select().from(sessions).where(eq(sessions.driverName, driverName));
+    for (const session of driverSessions) {
+      await db.delete(violations).where(eq(violations.sessionId, session.id));
+    }
+    await db.delete(sessions).where(eq(sessions.driverName, driverName));
+  }
+
+  async deleteAllDrivers(): Promise<void> {
+    await db.delete(violations);
+    await db.delete(sessions);
   }
 }
 

@@ -155,6 +155,20 @@ export const api = {
         })),
       },
     },
+    delete: {
+      method: 'DELETE' as const,
+      path: '/api/drivers/:name',
+      responses: {
+        204: z.void(),
+      },
+    },
+    deleteAll: {
+      method: 'DELETE' as const,
+      path: '/api/drivers',
+      responses: {
+        204: z.void(),
+      },
+    },
   },
 };
 
