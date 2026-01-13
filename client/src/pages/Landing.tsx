@@ -238,22 +238,19 @@ export default function Landing() {
                       const { label, variant } = getSuitabilityLabel(driver.lastReportDate);
                       const isSelected = selectedDrivers.has(driver.driverName);
                       return (
-                        <div 
+                        <label 
                           key={index}
-                          className={`flex items-center gap-3 py-4 px-3 transition-colors cursor-pointer ${
-                            isSelected ? "bg-primary/5" : "hover:bg-muted/20"
+                          className={`flex items-center gap-4 py-4 px-4 transition-colors cursor-pointer select-none ${
+                            isSelected ? "bg-primary/10" : "hover:bg-muted/30"
                           }`}
-                          onClick={() => toggleDriverSelection(driver.driverName)}
                           data-testid={`driver-item-${index}`}
                         >
-                          <div className="flex items-center justify-center w-8 h-8 -m-1">
-                            <Checkbox
-                              checked={isSelected}
-                              onCheckedChange={() => toggleDriverSelection(driver.driverName)}
-                              className="h-5 w-5 rounded"
-                              data-testid={`checkbox-driver-${index}`}
-                            />
-                          </div>
+                          <Checkbox
+                            checked={isSelected}
+                            onCheckedChange={() => toggleDriverSelection(driver.driverName)}
+                            className="h-6 w-6"
+                            data-testid={`checkbox-driver-${index}`}
+                          />
                           <div className="flex-1 min-w-0 flex items-center justify-between gap-2">
                             <div className="min-w-0">
                               <p className="font-medium text-foreground truncate text-sm" data-testid={`text-driver-name-${index}`}>
@@ -274,7 +271,7 @@ export default function Landing() {
                               {label}
                             </span>
                           </div>
-                        </div>
+                        </label>
                       );
                     })}
                   </div>
