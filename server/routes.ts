@@ -195,11 +195,11 @@ export async function registerRoutes(
     lines.push(`SESSION REPORT`);
     lines.push(`================================`);
     lines.push(`Bus Number: ${session.busNumber}`);
-    lines.push(`Driver: ${session.driverName}`);
+    lines.push(`Bus Driver: ${session.driverName}`);
     lines.push(`Route: ${session.route}`);
     lines.push(`Stop Boarded: ${session.stopBoarded}`);
-    lines.push(`Start Time: ${formatInTimeZone(new Date(session.startTime), TZ, "h:mm")}`);
-    lines.push(`End Time: ${session.endTime ? formatInTimeZone(new Date(session.endTime), TZ, "h:mm") : "N/A"}`);
+    lines.push(`Time Boarded: ${formatInTimeZone(new Date(session.startTime), TZ, "h:mm a")}`);
+    lines.push(`Time Off: ${session.endTime ? formatInTimeZone(new Date(session.endTime), TZ, "h:mm a") : "N/A"}`);
     lines.push(``);
     lines.push(`VIOLATIONS LOG (${violations.length})`);
     lines.push(`--------------------------------`);
@@ -215,7 +215,7 @@ export async function registerRoutes(
       // Group violations by type, preserving time order
       const grouped: Record<string, Array<{time: string, timestamp: Date, note?: string}>> = {};
       sortedViolations.forEach((v) => {
-        const timeStr = formatInTimeZone(new Date(v.timestamp), TZ, "h:mm");
+        const timeStr = formatInTimeZone(new Date(v.timestamp), TZ, "h:mm a");
         if (!grouped[v.type]) {
           grouped[v.type] = [];
         }
@@ -229,12 +229,12 @@ export async function registerRoutes(
       
       for (const [type, entries] of sortedGroups) {
         if (type.toLowerCase() === "uniform") {
-          // For uniform violations, only show notes (no time)
+          // For uniform violations, only show notes (no time, no brackets, no type label)
           const notesOnly = entries.filter(e => e.note).map(e => e.note);
           if (notesOnly.length > 0) {
-            lines.push(`[${notesOnly.join(", ")}] || ${type}`);
+            lines.push(notesOnly.join(", "));
           } else {
-            lines.push(`${type} (${entries.length})`);
+            lines.push(`Uniform violation (${entries.length})`);
           }
         } else {
           const timesWithNotes = entries.map(e => e.note ? `${e.time} (${e.note})` : e.time);
