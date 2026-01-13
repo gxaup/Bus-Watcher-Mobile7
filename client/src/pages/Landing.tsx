@@ -256,7 +256,22 @@ export default function Landing() {
             </DialogTrigger>
             <DialogContent className="max-w-md max-h-[80vh] flex flex-col">
               <DialogHeader className="pb-3 border-b">
-                <DialogTitle className="text-lg font-semibold">Driver Records</DialogTitle>
+                <div className="flex items-center justify-between">
+                  <DialogTitle className="text-lg font-semibold">Driver Records</DialogTitle>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={async () => {
+                      await fetch(api.drivers.sync.path, { method: "POST", credentials: "include" });
+                      queryClient.invalidateQueries({ queryKey: ["/api/drivers"] });
+                      toast({ title: "Scanned reports folder" });
+                    }}
+                    className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                    data-testid="button-sync-drivers"
+                  >
+                    <RefreshCw className="h-4 w-4" />
+                  </Button>
+                </div>
                 {drivers.length > 0 && (
                   <p className="text-xs text-muted-foreground mt-1">{drivers.length} driver{drivers.length !== 1 ? "s" : ""} tracked</p>
                 )}
