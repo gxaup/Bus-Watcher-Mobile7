@@ -310,16 +310,18 @@ export async function registerRoutes(
       }
     }
 
-    // Upsert all drivers found
-    const syncedDrivers: string[] = [];
+    // Only insert NEW drivers (don't update existing or resurrect deleted)
+    const newDrivers: string[] = [];
     const entries = Array.from(driverMap.entries());
     for (const entry of entries) {
       const [driverName, lastDate] = entry;
-      await storage.upsertDriver(driverName, lastDate);
-      syncedDrivers.push(driverName);
+      const wasNew = await storage.insertDriverIfNew(driverName, lastDate);
+      if (wasNew) {
+        newDrivers.push(driverName);
+      }
     }
 
-    res.json({ synced: syncedDrivers.length, drivers: syncedDrivers });
+    res.json({ synced: newDrivers.length, drivers: newDrivers });
   });
 
   return httpServer;

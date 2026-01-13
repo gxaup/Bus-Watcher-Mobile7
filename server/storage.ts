@@ -50,6 +50,7 @@ export interface IStorage {
   // Drivers (cross-user, persisted independently)
   getAllDrivers(): Promise<DriverInfo[]>;
   upsertDriver(driverName: string, reportDate: Date): Promise<void>;
+  insertDriverIfNew(driverName: string, reportDate: Date): Promise<boolean>;
   updateDriverDate(driverName: string, newDate: Date): Promise<DriverInfo | undefined>;
   deleteDriverByName(driverName: string): Promise<void>;
   deleteAllDrivers(): Promise<void>;
@@ -220,6 +221,17 @@ export class DatabaseStorage implements IStorage {
     } else if (existing[0].lastReportDate < reportDate) {
       await db.update(drivers).set({ lastReportDate: reportDate }).where(eq(drivers.driverName, driverName));
     }
+  }
+
+  async insertDriverIfNew(driverName: string, reportDate: Date): Promise<boolean> {
+    if (!driverName || driverName.trim() === '') return false;
+    
+    const existing = await db.select().from(drivers).where(eq(drivers.driverName, driverName));
+    if (existing.length === 0) {
+      await db.insert(drivers).values({ driverName, lastReportDate: reportDate });
+      return true;
+    }
+    return false;
   }
 
   async updateDriverDate(driverName: string, newDate: Date): Promise<DriverInfo | undefined> {
