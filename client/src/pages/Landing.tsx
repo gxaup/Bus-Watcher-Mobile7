@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { ClipboardList, Folder, Play, LogOut, Users, Trash2 } from "lucide-react";
+import { ClipboardList, Folder, Play, LogOut, Users, Trash2, RefreshCw } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { apiRequest, queryClient } from "@/lib/queryClient";
+import { queryClient } from "@/lib/queryClient";
+import { apiRequest } from "@/lib/queryClient";
 import {
   Dialog,
   DialogContent,
@@ -128,12 +129,24 @@ export default function Landing() {
 
   return (
     <div className="min-h-screen w-full bg-background flex flex-col p-4 safe-area-bottom safe-area-top">
-      <div className="absolute top-4 right-4 flex items-center gap-3">
+      <div className="absolute top-4 right-4 flex items-center gap-2">
         {user && (
           <>
             <span className="text-sm text-muted-foreground hidden sm:inline" data-testid="text-user-name">
               {user.username}
             </span>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => {
+                queryClient.invalidateQueries({ queryKey: ["/api/sessions"] });
+                queryClient.invalidateQueries({ queryKey: ["/api/drivers"] });
+              }}
+              className="text-muted-foreground hover:text-foreground"
+              data-testid="button-refresh"
+            >
+              <RefreshCw className="h-5 w-5" />
+            </Button>
             <Button
               variant="ghost"
               size="icon"
