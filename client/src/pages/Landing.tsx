@@ -93,12 +93,12 @@ export default function Landing() {
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    const dateFormatted = format(date, "MMM d");
+    const dateFormatted = format(date, "M/d");
     if (isToday(date)) return `Today, ${dateFormatted}`;
     if (isYesterday(date)) return `Yesterday, ${dateFormatted}`;
     const daysDiff = differenceInDays(new Date(), date);
     if (daysDiff < 7) return `${daysDiff} days ago, ${dateFormatted}`;
-    return format(date, "MMM d, yyyy");
+    return format(date, "M/d/yyyy");
   };
 
   const toggleDriverSelection = (driverName: string) => {
