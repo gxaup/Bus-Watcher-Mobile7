@@ -6,6 +6,7 @@ import { useAuth } from "@/lib/auth";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
 import { apiRequest } from "@/lib/queryClient";
+import { api } from "@shared/routes";
 import {
   Dialog,
   DialogContent,
@@ -138,7 +139,9 @@ export default function Landing() {
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => {
+              onClick={async () => {
+                // Sync drivers from report files on server
+                await fetch(api.drivers.sync.path, { method: "POST", credentials: "include" });
                 queryClient.invalidateQueries({ queryKey: ["/api/sessions"] });
                 queryClient.invalidateQueries({ queryKey: ["/api/drivers"] });
               }}

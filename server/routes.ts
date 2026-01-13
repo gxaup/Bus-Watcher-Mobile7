@@ -6,6 +6,10 @@ import { z } from "zod";
 import { format } from "date-fns";
 import { formatInTimeZone } from "date-fns-tz";
 import { registerAuthRoutes, isAuthenticated } from "./auth";
+import * as fs from "fs";
+import * as path from "path";
+
+const REPORTS_DIR = path.join(process.cwd(), "reports");
 
 export async function registerRoutes(
   httpServer: Server,
@@ -247,7 +251,52 @@ export async function registerRoutes(
     const reportName = `${req.user!.username}_${session.busNumber}`;
     const filename = `${reportName}_${format(new Date(), "yyyyMMdd_HHmm")}.txt`;
 
+    // Save report file to server
+    if (!fs.existsSync(REPORTS_DIR)) {
+      fs.mkdirSync(REPORTS_DIR, { recursive: true });
+    }
+    const filePath = path.join(REPORTS_DIR, filename);
+    fs.writeFileSync(filePath, content, "utf-8");
+
     res.json({ filename, content });
+  });
+
+  // Scan reports folder and sync driver names to database
+  app.post(api.drivers.sync.path, isAuthenticated, async (req, res) => {
+    if (!fs.existsSync(REPORTS_DIR)) {
+      return res.json({ synced: 0, drivers: [] });
+    }
+
+    const files = fs.readdirSync(REPORTS_DIR).filter(f => f.endsWith(".txt"));
+    const driverMap = new Map<string, Date>();
+
+    for (const file of files) {
+      const filePath = path.join(REPORTS_DIR, file);
+      const content = fs.readFileSync(filePath, "utf-8");
+      const stat = fs.statSync(filePath);
+      const fileDate = stat.mtime;
+
+      // Extract driver name from report content
+      const match = content.match(/^Bus Driver:\s*(.+)$/m);
+      if (match && match[1].trim()) {
+        const driverName = match[1].trim();
+        const existing = driverMap.get(driverName);
+        if (!existing || existing < fileDate) {
+          driverMap.set(driverName, fileDate);
+        }
+      }
+    }
+
+    // Upsert all drivers found
+    const syncedDrivers: string[] = [];
+    const entries = Array.from(driverMap.entries());
+    for (const entry of entries) {
+      const [driverName, lastDate] = entry;
+      await storage.upsertDriver(driverName, lastDate);
+      syncedDrivers.push(driverName);
+    }
+
+    res.json({ synced: syncedDrivers.length, drivers: syncedDrivers });
   });
 
   return httpServer;

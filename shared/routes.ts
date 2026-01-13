@@ -155,6 +155,16 @@ export const api = {
         })),
       },
     },
+    sync: {
+      method: 'POST' as const,
+      path: '/api/drivers/sync',
+      responses: {
+        200: z.object({
+          synced: z.number(),
+          drivers: z.array(z.string()),
+        }),
+      },
+    },
     delete: {
       method: 'DELETE' as const,
       path: '/api/drivers/:name',
